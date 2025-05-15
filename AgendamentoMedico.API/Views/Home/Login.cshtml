@@ -1,0 +1,86 @@
+﻿@model AgendamentoMedico.API.Models.LoginViewModel;
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/RelatoriosProtheus.styles.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
+
+<style>
+    .logo-text {
+        font-family: 'Pacifico', cursive;
+        color: #4F46E5;
+    }
+
+    .custom-checkbox .form-check-input:checked {
+        background-color: #4F46E5;
+        border-color: #4F46E5;
+    }
+
+    .password-toggle-icon {
+        cursor: pointer;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>
+
+<body class="bg-light min-vh-100 d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <br />
+                            <h2 class="h4 text-dark mb-2">Agendamento Médico</h2>
+                            <p class="text-muted">Bem-vindo de volta! Por favor, entre com suas credenciais.</p>
+                        </div>
+
+                        @using (Html.BeginForm("Login", "Auth", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
+                        {
+                            <div class="mb-3">
+                                @Html.LabelFor(m => m.NomeUsuario, new { @class = "form-label" })
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person-circle"></i>
+                                    </span>
+                                    @Html.TextBoxFor(m => m.NomeUsuario, new { @class = "form-control", placeholder = "Digite seu login" })
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                @Html.LabelFor(m => m.Senha, new { @class = "form-label" })
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
+                                    @Html.PasswordFor(m => m.Senha, new { @class = "form-control", placeholder = "Digite sua senha", id = "senha" })
+                                    <span class="password-toggle-icon">
+                                        <i class="ri-eye-line" id="togglePassword"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 mb-3">Entrar</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('senha');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('ri-eye-off-line');
+        });
+    </script>   
+</body>
