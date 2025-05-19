@@ -42,6 +42,7 @@
                             <p class="text-muted">Bem-vindo de volta! Por favor, entre com suas credenciais.</p>
                         </div>
 
+                        @Html.ValidationSummary();
                         @using (Html.BeginForm("Login", "Auth", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
                         {
                             <div class="mb-3">

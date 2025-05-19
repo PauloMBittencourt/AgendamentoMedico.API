@@ -20,6 +20,7 @@ namespace AgendamentoMedico.Utils.Encrypt
             return Encoding.UTF8.GetString(base64EncodedBytes);
         }
 
+
         public static string EncryptPassword(string password)
         {
             var EncryptionKey = "@AlWaLç_";
@@ -42,6 +43,28 @@ namespace AgendamentoMedico.Utils.Encrypt
                 }
             }
 
+            return password;
+        }
+
+        public static string DecryptPassword(string password)
+        {
+            string EncryptionKey = "@AWNÇaP867";
+            byte[] passBytes = Convert.FromBase64String(password);
+            using (Aes encrypt = Aes.Create())
+            {
+                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
+                encrypt.Key = pdb.GetBytes(32);
+                encrypt.IV = pdb.GetBytes(16);
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, encrypt.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(passBytes, 0, passBytes.Length);
+                        cs.Close();
+                    }
+                    password = Encoding.Unicode.GetString(ms.ToArray());
+                }
+            }
             return password;
         }
     }

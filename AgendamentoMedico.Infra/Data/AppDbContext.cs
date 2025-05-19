@@ -11,6 +11,8 @@ namespace AgendamentoMedico.Infra.Data
 
         public DbSet<Funcionario> Funcionarios { get; set; }   
         public DbSet<Cliente> Clientes { get; set; }     
+        public DbSet<Usuario> Usuarios { get; set; } 
+        public DbSet<IdentityRole> CargosIdentity { get; set; } 
         public DbSet<HorarioDisponivel> HorariosDisponiveis { get; set; }
         public DbSet<Funcionario_Cliente> Agendamentos { get; set; } 
 

@@ -45,7 +45,7 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clientes");
+                    b.ToTable("Clientes", (string)null);
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Funcionario", b =>
@@ -71,7 +71,7 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Funcionarios");
+                    b.ToTable("Funcionarios", (string)null);
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Funcionario_Cliente", b =>
@@ -94,7 +94,7 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasIndex("ClienteId");
 
-                    b.ToTable("Agendamentos");
+                    b.ToTable("Agendamentos", (string)null);
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.HorarioDisponivel", b =>
@@ -116,7 +116,7 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasIndex("FuncionarioId");
 
-                    b.ToTable("HorariosDisponiveis");
+                    b.ToTable("HorariosDisponiveis", (string)null);
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.IdentityRole", b =>
@@ -137,7 +137,7 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CargosIdentity");
+                    b.ToTable("CargosIdentity", (string)null);
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Usuario", b =>
@@ -158,7 +158,7 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Usuarios");
+                    b.ToTable("Usuarios", (string)null);
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Cliente", b =>
