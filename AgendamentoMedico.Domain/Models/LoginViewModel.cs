@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace AgendamentoMedico.Domain.Models
 {
@@ -6,5 +7,7 @@ namespace AgendamentoMedico.Domain.Models
     {
         public string NomeUsuario { get; set; }
         public string Senha { get; set; }
+        [DisplayName("Lembrar senha?")]
+        public bool RememberMe { get; set; }
     }
 }

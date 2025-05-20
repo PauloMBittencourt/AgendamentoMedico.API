@@ -1,0 +1,107 @@
+﻿@using AgendamentoMedico.Domain.Entities
+@model IEnumerable<AgendamentoMedico.Domain.Models.UsuarioRoleViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    List<IdentityRole> perfis = (List<IdentityRole>)ViewBag.Cargos;
+}
+
+<!--Admin Usuarios-->
+
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">Usuários (Perfis)</a></li>
+    </ol>
+</nav>
+<hr />
+
+<table class="table" id="_dataTableUsers">
+    <thead>
+        <tr>
+            <th>
+                Usuário
+            </th>
+            <th>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>
+                    <div>
+                        @Html.DisplayFor(modelItem => user.Nome)
+                    </div>
+                </td>
+                <td>
+                    <a asp-action="Cargos" asp-route-id="@user.UsuarioId" class="btn-actions btn-primary text-center" title="Editar">Cargos</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(function () {
+            $('.btn-check').on('change', function (e) {
+                var funcionarioId = $(e.target).data("id");
+                var perfil = $(e.target).val();
+                var active = $(e.target).prop("checked");
+                changePerfil(funcionarioId, perfil, active);
+            });
+
+            function changePerfil(funcionarioId, perfil, active) {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("ChangePerfilUsuario", "Auth")",
+                    dataType: "json",
+                    data: {
+                        FuncionarioId: funcionarioId,
+                        Perfil: perfil,
+                        active: active
+                    },
+                }).done(function (data) {
+                    console.log('Alteração ' + data);
+                });
+            }
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#_dataTableUsers").DataTable({
+                language:
+                {
+                    "sEmptyTable": "Nenhum registro encontrado",
+                    "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                    "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+                    "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ".",
+                    "sLengthMenu": "_MENU_ resultados por página",
+                    "sLoadingRecords": "Carregando...",
+                    "sProcessing": "Processando...",
+                    "sZeroRecords": "Nenhum registro encontrado",
+                    "sSearch": "Pesquisar",
+                    "oPaginate": {
+                        "sNext": "Próximo",
+                        "sPrevious": "Anterior",
+                        "sFirst": "Primeiro",
+                        "sLast": "Último"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": Ordenar colunas de forma ascendente",
+                        "sSortDescending": ": Ordenar colunas de forma descendente"
+                    }
+                },
+                order: [],
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+            });
+        });
+    </script>
+}

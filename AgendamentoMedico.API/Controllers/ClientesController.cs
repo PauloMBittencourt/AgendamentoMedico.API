@@ -63,7 +63,6 @@ namespace AgendamentoMedico.API.Controllers
             return RedirectToAction(nameof(StepCliente));
         }
 
-        // Etapa 2: Cliente
         [HttpGet]
         public IActionResult StepCliente()
         {
@@ -88,7 +87,7 @@ namespace AgendamentoMedico.API.Controllers
 
         public IActionResult Finish()
         {
-            return View("Index");
+            return RedirectToAction("Index");
         }
         #endregion
 

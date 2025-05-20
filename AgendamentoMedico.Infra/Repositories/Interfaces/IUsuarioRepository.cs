@@ -15,5 +15,6 @@ namespace AgendamentoMedico.Infra.Repositories.Interfaces
         Task UpdateAsync(Usuario usuario);
         Task DeleteAsync(Guid id);
         Task<List<Usuario>> GetAllAsync();
+        Task<Usuario?> GetByUsernameAndPasswordAsync(string nomeUsuario, string senha);
     }
 }

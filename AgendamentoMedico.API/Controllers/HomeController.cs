@@ -29,7 +29,8 @@ public class HomeController : Controller
         if (usuario == null)
             return RedirectToAction("Login", "Auth");
 
-        if (usuario.FuncionarioId != null && usuario.FuncionarioId.Cargo == EnumCargo.Medico)
+        if ((usuario.FuncionarioId != null && usuario.Cargos.Where(c => c.CargosIdentityFk.Nome == "Medico").Any()) 
+            || usuario.Cargos.Where(c => c.CargosIdentityFk.Nome == "Administrador").Any())
         {
             return View("MedicoDashboard", await _horarioService.ObterTodosPorFuncionarioAsync(usuario.Id));
         }
@@ -37,7 +38,7 @@ public class HomeController : Controller
         return View("ClienteDashboard");
     }
 
-    [Authorize(Roles = "Medico")]
+    [Authorize(Roles = "Medico,Administrador")]
     [HttpPost]
     public async Task<IActionResult> AddHorario(DateTime dataHora)
     {

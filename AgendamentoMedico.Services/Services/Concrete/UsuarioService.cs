@@ -72,5 +72,11 @@ namespace AgendamentoMedico.Services.Services.Concrete
         {
             await _repo.DeleteAsync(id);
         }
+
+        public async Task<Usuario> ObterUsuarioPorSenha(string nomeUsuario, string senha)
+        {
+            var usuario = await _repo.GetByUsernameAndPasswordAsync(nomeUsuario, senha);
+            return usuario;
+        }
     }
 }

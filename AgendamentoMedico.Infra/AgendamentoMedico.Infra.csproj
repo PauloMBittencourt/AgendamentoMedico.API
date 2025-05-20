@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AgendamentoMedico.Domain\AgendamentoMedico.Domain.csproj" />
+    <ProjectReference Include="..\AgendamentoMedico.Utils\AgendamentoMedico.Utils.csproj" />
   </ItemGroup>
 
 </Project>

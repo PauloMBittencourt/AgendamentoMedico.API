@@ -1,165 +1,121 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using AgendamentoMedico.Domain.Models;
+using AgendamentoMedico.Services.Services.Interfaces;
+using AgendamentoMedico.Services.Services.Concrete;
+using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using AgendamentoMedico.Domain.Entities;
-using AgendamentoMedico.Infra.Data;
 
 namespace AgendamentoMedico.API.Controllers
 {
     public class FuncionariosController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly IFuncionarioService _funcionarioService;
+        private readonly IUsuarioService _usuarioService;
+        private readonly ICargosService _cargosService;
 
-        public FuncionariosController(AppDbContext context)
+        public FuncionariosController(IFuncionarioService funcionarioService, IUsuarioService usuarioService, ICargosService cargosService)
         {
-            _context = context;
+            _funcionarioService = funcionarioService;
+            _usuarioService = usuarioService;
+            _cargosService = cargosService;
         }
 
-        // GET: Funcionarios
         public async Task<IActionResult> Index()
         {
-            var appDbContext = _context.Funcionarios.Include(f => f.UsuarioFuncionario);
-            return View(await appDbContext.ToListAsync());
+            var listaVm = await _funcionarioService.ObterTodosAsync();
+            
+            return View(listaVm);
         }
 
-        // GET: Funcionarios/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        public async Task<IActionResult> Details(Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var funcionario = await _context.Funcionarios
-                .Include(f => f.UsuarioFuncionario)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (funcionario == null)
-            {
-                return NotFound();
-            }
-
-            return View(funcionario);
+            var vm = await _funcionarioService.ObterPorIdAsync(id);
+            if (vm is null) return NotFound();
+            return View(vm);
         }
 
-        // GET: Funcionarios/Create
         public IActionResult Create()
         {
-            ViewData["Id"] = new SelectList(_context.Usuarios, "Id", "NomeUsuario");
-            return View();
+            ViewData["Id"] = new SelectList(_usuarioService.ObterTodosAsync().Result, "Id", "NomeUsuario");
+            return View("StepUsuario");
         }
 
-        // POST: Funcionarios/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nome,Email,Cargo")] Funcionario funcionario)
+        public async Task<IActionResult> Edit(Guid id)
         {
-            if (ModelState.IsValid)
-            {
-                funcionario.Id = Guid.NewGuid();
-                _context.Add(funcionario);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["Id"] = new SelectList(_context.Usuarios, "Id", "NomeUsuario", funcionario.Id);
-            return View(funcionario);
+            var vm = await _funcionarioService.ObterPorIdAsync(id);
+            if (vm is null) return NotFound();
+            return View(vm);
         }
 
-        // GET: Funcionarios/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Guid id, FuncionarioViewModel vm)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var funcionario = await _context.Funcionarios.FindAsync(id);
-            if (funcionario == null)
-            {
-                return NotFound();
-            }
-            ViewData["Id"] = new SelectList(_context.Usuarios, "Id", "NomeUsuario", funcionario.Id);
-            return View(funcionario);
-        }
-
-        // POST: Funcionarios/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Nome,Email,Cargo")] Funcionario funcionario)
-        {
-            if (id != funcionario.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(funcionario);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!FuncionarioExists(funcionario.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["Id"] = new SelectList(_context.Usuarios, "Id", "NomeUsuario", funcionario.Id);
-            return View(funcionario);
-        }
-
-        // GET: Funcionarios/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var funcionario = await _context.Funcionarios
-                .Include(f => f.UsuarioFuncionario)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (funcionario == null)
-            {
-                return NotFound();
-            }
-
-            return View(funcionario);
-        }
-
-        // POST: Funcionarios/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            var funcionario = await _context.Funcionarios.FindAsync(id);
-            if (funcionario != null)
-            {
-                _context.Funcionarios.Remove(funcionario);
-            }
-
-            await _context.SaveChangesAsync();
+            if (id != vm.Id) return BadRequest();
+            if (!ModelState.IsValid) return View(vm);
+            await _funcionarioService.AtualizarAsync(id, vm);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool FuncionarioExists(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            return _context.Funcionarios.Any(e => e.Id == id);
+            var vm = await _funcionarioService.ObterPorIdAsync(id);
+            if (vm is null) return NotFound();
+            return View(vm);
         }
+
+        [HttpPost, ActionName("Delete"), ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            await _funcionarioService.ExcluirAsync(id);
+            return RedirectToAction(nameof(Index));
+        }
+
+        #region Cadastro de Funcionarios
+        [HttpGet]
+        public IActionResult StepUsuario()
+        {
+            ViewData["Roles"] = new SelectList(_cargosService.ObterTodosCargosDescAsync(true), "Id", "Nome");
+            return View(new UsuarioViewModel());
+        }
+
+        [HttpPost]
+        public IActionResult StepUsuario(UsuarioViewModel vm)
+        {
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            TempData["Usuario"] = JsonConvert.SerializeObject(vm);
+            TempData.Keep("Usuario");
+
+            return RedirectToAction(nameof(StepFuncionario));
+        }
+
+        [HttpGet]
+        public IActionResult StepFuncionario()
+        {
+            var usuarioJson = TempData.Peek("Usuario") as string;
+            if (usuarioJson == null) return RedirectToAction(nameof(StepUsuario));
+            var usuarioVm = JsonConvert.DeserializeObject<UsuarioViewModel>(usuarioJson);
+            return View(new FuncionarioCreateViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> StepFuncionario(FuncionarioCreateViewModel vm)
+        {
+            if (!ModelState.IsValid) return View(vm);
+
+            var usuarioVm = JsonConvert.DeserializeObject<UsuarioViewModel>(
+                TempData.Peek("Usuario")!.ToString()!);
+
+            await _funcionarioService.CriarAsync(usuarioVm, vm);
+
+            return RedirectToAction(nameof(Finish));
+        }
+
+        public IActionResult Finish()
+        {
+            return RedirectToAction("Index");
+        }
+        #endregion
     }
 }

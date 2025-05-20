@@ -1,3 +1,5 @@
+using DomainRole = AgendamentoMedico.Domain.Entities.IdentityRole;
+using IdentityRole = Microsoft.AspNetCore.Identity.IdentityRole;
 using AgendamentoMedico.Infra.Data;
 using AgendamentoMedico.Infra.Repositories.Concrete;
 using AgendamentoMedico.Infra.Repositories.Interfaces;
@@ -30,7 +32,11 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IHorarioDisponivelRepository, HorarioDisponivelRepository>();
 builder.Services.AddScoped<IAgendamentoRepository, AgendamentoRepository>();
+builder.Services.AddScoped<ICargosRepository, CargosRepository>();
+builder.Services.AddScoped<IFuncionarioRepository, FuncionarioRepository>();
 
+builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
+builder.Services.AddScoped<ICargosService, CargosServices>();
 builder.Services.AddScoped<IAuthServices, AuthServices>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IAuthServices, AuthServices>();

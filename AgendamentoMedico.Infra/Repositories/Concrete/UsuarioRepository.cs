@@ -1,6 +1,7 @@
 ﻿using AgendamentoMedico.Domain.Entities;
 using AgendamentoMedico.Infra.Data;
 using AgendamentoMedico.Infra.Repositories.Interfaces;
+using AgendamentoMedico.Utils.Encrypt;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,28 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
         public async Task<Usuario?> GetByUsernameAsync(string nomeUsuario)
             => await _context.Usuarios
                              .AsNoTracking()
+                             .Include(c => c.Cargos)
+                             .ThenInclude(cf => cf.CargosIdentityFk)
+                             .Include(f => f.FuncionarioId)
+                             .Include(cl => cl.ClienteId)
                              .FirstOrDefaultAsync(u => u.NomeUsuario == nomeUsuario);
+
+        public async Task<Usuario?> GetByUsernameAndPasswordAsync(string nomeUsuario, string senha)
+        {
+            var user = await _context.Usuarios
+                    .Include(f => f.Cargos)
+                    .ThenInclude(pf => pf.CargosIdentityFk)
+                    .Include(f => f.FuncionarioId)
+                    .FirstOrDefaultAsync(f =>
+                        f.NomeUsuario == nomeUsuario);
+            
+            if (EncryptUtils.DecryptPasswordBase64(EncryptUtils.DecryptPassword(user.Senha)) != senha)
+            {
+                return null;
+            }
+
+            return user;
+        }
 
         public async Task AddAsync(Usuario usuario)
         {

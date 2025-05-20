@@ -16,5 +16,6 @@ namespace AgendamentoMedico.Services.Services.Interfaces
         Task AtualizarAsync(Guid id, UsuarioViewModel vm);
         Task ExcluirAsync(Guid id);
         Task<IEnumerable<Usuario>> ObterTodosAsync();
+        Task<Usuario> ObterUsuarioPorSenha(string nomeUsuario, string senha);
     }
 }
