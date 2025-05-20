@@ -21,5 +21,6 @@ namespace AgendamentoMedico.Domain.Entities
 
         public Funcionario? FuncionarioId { get; set; }
         public Cliente? ClienteId { get; set; }
+        public List<IdentityRole_Usuario> Cargos { get; set; }
     }
 }

@@ -47,6 +47,24 @@ namespace AgendamentoMedico.Infra.Data
                   .IsRequired();
             });
 
+            modelBuilder.Entity<IdentityRole_Usuario>(pf => {
+
+                pf.ToTable("CargosIdentity_Usuarios");
+                pf.HasKey(pf => new { pf.CargosIdentityId, pf.UsuarioId});
+
+                pf.HasOne(pf => pf.CargosIdentityFk)
+                        .WithMany(p => p.UsuarioFk)
+                        .HasForeignKey(pf => pf.CargosIdentityId)
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                pf.HasOne(pf => pf.UsuarioFk)
+                        .WithMany(f => f.Cargos)
+                        .HasForeignKey(pf => pf.UsuarioId)
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+            });
+
             modelBuilder.Entity<Cliente>(c =>
             {
                 c.HasKey(x => x.Id);
@@ -62,9 +80,9 @@ namespace AgendamentoMedico.Infra.Data
                 c.Property(x => x.Telefone)
                  .HasMaxLength(20);
 
-                c.HasOne(x => x.UsuarioClienteId)
+                c.HasOne(x => x.UsuarioCliente)
                  .WithOne(u => u.ClienteId)
-                 .HasForeignKey<Cliente>(x => x.Id)       
+                 .HasForeignKey<Cliente>(x => x.UsuarioId)       
                  .OnDelete(DeleteBehavior.Restrict);      
 
                 c.HasMany(x => x.Agendamentos)
@@ -88,9 +106,9 @@ namespace AgendamentoMedico.Infra.Data
                 f.Property(x => x.Cargo)
                  .IsRequired();
 
-                f.HasOne(x => x.UsuarioFuncionarioId)
+                f.HasOne(x => x.UsuarioFuncionario)
                  .WithOne(u => u.FuncionarioId)
-                 .HasForeignKey<Funcionario>(x => x.Id)
+                 .HasForeignKey<Funcionario>(x => x.UsuarioId)
                  .OnDelete(DeleteBehavior.Restrict);
 
                 f.HasMany(x => x.HorariosDisponiveis)

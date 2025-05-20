@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35825.156 d17.13
+VisualStudioVersion = 17.13.35825.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendamentoMedico.API", "AgendamentoMedico.API\AgendamentoMedico.API.csproj", "{EC6CF701-2313-4133-A573-371BBA2CD532}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendamentoMedico.Infra", "AgendamentoMedico.Infra\AgendamentoMedico.Infra.csproj", "{D311E6AB-9730-438A-A1ED-2605C5DD01DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendamentoMedico.Utils", "AgendamentoMedico.Utils\AgendamentoMedico.Utils.csproj", "{99186E29-CDB0-49B5-AFB5-DB5938E1CFCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendamentoMedico.Services", "AgendamentoMedico.Services\AgendamentoMedico.Services.csproj", "{305F6175-1DBF-44B4-87BC-16B63B9F3D5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{99186E29-CDB0-49B5-AFB5-DB5938E1CFCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99186E29-CDB0-49B5-AFB5-DB5938E1CFCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99186E29-CDB0-49B5-AFB5-DB5938E1CFCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{305F6175-1DBF-44B4-87BC-16B63B9F3D5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{305F6175-1DBF-44B4-87BC-16B63B9F3D5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{305F6175-1DBF-44B4-87BC-16B63B9F3D5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{305F6175-1DBF-44B4-87BC-16B63B9F3D5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

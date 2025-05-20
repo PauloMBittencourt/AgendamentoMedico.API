@@ -13,5 +13,7 @@ namespace AgendamentoMedico.Domain.Entities
         public Guid Id { get; set; }
         public string Nome { get; set; }
         public string Descricao { get; set; }
+
+        public List<IdentityRole_Usuario> UsuarioFk { get; set; }
     }
 }

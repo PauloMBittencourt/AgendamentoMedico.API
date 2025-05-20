@@ -1,21 +1,87 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using AgendamentoMedico.API.Models;
+using AgendamentoMedico.Domain.Models;
+using AgendamentoMedico.Services.Services.Interfaces;
+using AgendamentoMedico.Domain.Enuns;
+using AgendamentoMedico.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AgendamentoMedico.API.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly IUsuarioService _usuarioService;
+    private readonly IHorarioDisponivelService _horarioService;
+    private readonly IAgendamentoService _agendamentoService;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, IUsuarioService usuarioSvc, IHorarioDisponivelService horarioSvc, IAgendamentoService agendamentoSvc)
     {
         _logger = logger;
+        _usuarioService = usuarioSvc;
+        _horarioService = horarioSvc;
+        _agendamentoService = agendamentoSvc;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View("Login");
+        var usuario = await _usuarioService.ObterPorNomeAsync(User.Identity.Name!);
+        if (usuario == null)
+            return RedirectToAction("Login", "Auth");
+
+        if (usuario.FuncionarioId != null && usuario.FuncionarioId.Cargo == EnumCargo.Medico)
+        {
+            return View("MedicoDashboard", await _horarioService.ObterTodosPorFuncionarioAsync(usuario.Id));
+        }
+
+        return View("ClienteDashboard");
+    }
+
+    [Authorize(Roles = "Medico")]
+    [HttpPost]
+    public async Task<IActionResult> AddHorario(DateTime dataHora)
+    {
+        var usuario = await _usuarioService.ObterPorNomeAsync(User.Identity.Name!);
+        if (usuario == null) return Unauthorized();
+
+        var hd = new HorarioDisponivel
+        {
+            HorarioDisponivelId = Guid.NewGuid(),
+            FuncionarioId = usuario.Id,
+            DataHora = dataHora,
+            Disponivel = true
+        };
+        await _horarioService.CriarAsync(hd);
+        return RedirectToAction(nameof(Index));
+    }
+
+    [Authorize(Roles = "Cliente")]
+    [HttpGet]
+    public async Task<JsonResult> GetHorariosDisponiveis()
+    {
+        var list = await _horarioService.ObterDisponiveisAsync();
+
+        var events = list
+            .Select(h => new {
+                id = h.HorarioDisponivelId,
+                title = "Disponível",
+                start = h.DataHora.ToString("s"),
+                allDay = false
+            })
+            .ToList();
+
+        return Json(events);
+    }
+
+    [Authorize(Roles = "Cliente")]
+    [HttpPost]
+    public async Task<IActionResult> Agendar(Guid horarioId)
+    {
+        var usuario = await _usuarioService.ObterPorNomeAsync(User.Identity.Name!);
+        if (usuario == null) return Unauthorized();
+
+        await _agendamentoService.MarkAsync(horarioId, usuario.Id);
+        return Ok();
     }
 
     public IActionResult Privacy()

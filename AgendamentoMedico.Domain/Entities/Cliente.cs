@@ -20,7 +20,10 @@ namespace AgendamentoMedico.Domain.Entities
         public string Email { get; set; }
         public string Telefone { get; set; }
 
-        public Usuario UsuarioClienteId { get; set; }
+
+        [ForeignKey(nameof(UsuarioCliente))]
+        public Guid UsuarioId { get; set; }
+        public Usuario UsuarioCliente { get; set; }
         public ICollection<Funcionario_Cliente> Agendamentos { get; set; }
     }
 }

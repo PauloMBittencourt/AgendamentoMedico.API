@@ -9,7 +9,12 @@ namespace AgendamentoMedico.Utils.Encrypt
 {
     public class EncryptUtils
     {
-       public static string EncryptPasswordBase64(string password)
+        private const string EncryptionKey = "@AlWaLç_";
+        private static readonly byte[] Salt =
+            { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d,
+          0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 };
+
+        public static string EncryptPasswordBase64(string password)
         {
             var plainTextBytes = Encoding.UTF8.GetBytes(password);
             return Convert.ToBase64String(plainTextBytes);
@@ -23,11 +28,10 @@ namespace AgendamentoMedico.Utils.Encrypt
 
         public static string EncryptPassword(string password)
         {
-            var EncryptionKey = "@AlWaLç_";
             byte[] clearBytes = Encoding.Unicode.GetBytes(password);
             using (Aes encrypt = Aes.Create())
             {
-                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
+                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, Salt);
 
                 encrypt.Key = pdb.GetBytes(32);
                 encrypt.IV = pdb.GetBytes(16);
@@ -48,11 +52,10 @@ namespace AgendamentoMedico.Utils.Encrypt
 
         public static string DecryptPassword(string password)
         {
-            string EncryptionKey = "@AWNÇaP867";
             byte[] passBytes = Convert.FromBase64String(password);
             using (Aes encrypt = Aes.Create())
             {
-                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
+                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, Salt);
                 encrypt.Key = pdb.GetBytes(32);
                 encrypt.IV = pdb.GetBytes(16);
                 using (MemoryStream ms = new MemoryStream())

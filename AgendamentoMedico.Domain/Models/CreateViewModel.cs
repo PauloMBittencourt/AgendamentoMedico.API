@@ -1,6 +1,6 @@
 ﻿using AgendamentoMedico.Domain.Entities;
 
-namespace AgendamentoMedico.API.Models
+namespace AgendamentoMedico.Domain.Models
 {
     public class CreateViewModel
     {

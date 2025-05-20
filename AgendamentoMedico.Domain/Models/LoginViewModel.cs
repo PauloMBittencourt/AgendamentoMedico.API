@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AgendamentoMedico.API.Models
+namespace AgendamentoMedico.Domain.Models
 {
     public class LoginViewModel
     {

@@ -1,0 +1,33 @@
+﻿@using AgendamentoMedico.Domain.Models
+@model ClienteViewModel
+@{
+    ViewData["Title"] = "Cadastro – Etapa 2";
+}
+<div class="card">
+    <div class="card-header bg-color-code text-white">
+        <h5>Passo 2 de 2: Cliente</h5>
+        <div class="progress mt-2">
+            <div class="progress-bar" style="width:100%"></div>
+        </div>
+    </div>
+    <div class="card-body">
+        <form asp-action="StepCliente" method="post">
+            <div class="mb-3">
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control" />
+                <span asp-validation-for="Nome" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Telefone" class="form-label"></label>
+                <input asp-for="Telefone" class="form-control" />
+            </div>
+            <a asp-action="Step1" class="btn btn-secondary">Voltar</a>
+            <button type="submit" class="btn btn-success">Concluir</button>
+        </form>
+    </div>
+</div>

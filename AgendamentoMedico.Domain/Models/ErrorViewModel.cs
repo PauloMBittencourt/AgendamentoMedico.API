@@ -1,4 +1,4 @@
-namespace AgendamentoMedico.API.Models
+namespace AgendamentoMedico.Domain.Models
 {
     public class ErrorViewModel
     {

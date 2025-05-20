@@ -25,6 +25,7 @@ namespace AgendamentoMedico.Infra.Migrations
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Cliente", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
@@ -43,14 +44,21 @@ namespace AgendamentoMedico.Infra.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Clientes", (string)null);
+                    b.HasIndex("UsuarioId")
+                        .IsUnique();
+
+                    b.ToTable("Clientes");
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Funcionario", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Cargo")
@@ -69,9 +77,15 @@ namespace AgendamentoMedico.Infra.Migrations
                         .HasColumnType("nvarchar(200)")
                         .HasColumnName("Nome");
 
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Funcionarios", (string)null);
+                    b.HasIndex("UsuarioId")
+                        .IsUnique();
+
+                    b.ToTable("Funcionarios");
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Funcionario_Cliente", b =>
@@ -94,7 +108,7 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasIndex("ClienteId");
 
-                    b.ToTable("Agendamentos", (string)null);
+                    b.ToTable("Agendamentos");
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.HorarioDisponivel", b =>
@@ -116,7 +130,7 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasIndex("FuncionarioId");
 
-                    b.ToTable("HorariosDisponiveis", (string)null);
+                    b.ToTable("HorariosDisponiveis");
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.IdentityRole", b =>
@@ -137,7 +151,24 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CargosIdentity", (string)null);
+                    b.ToTable("CargosIdentity");
+                });
+
+            modelBuilder.Entity("AgendamentoMedico.Domain.Entities.IdentityRole_Usuario", b =>
+                {
+                    b.Property<Guid>("CargosIdentityId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnOrder(0);
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnOrder(1);
+
+                    b.HasKey("CargosIdentityId", "UsuarioId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("CargosIdentity_Usuarios", (string)null);
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Usuario", b =>
@@ -158,29 +189,29 @@ namespace AgendamentoMedico.Infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Usuarios", (string)null);
+                    b.ToTable("Usuarios");
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Cliente", b =>
                 {
-                    b.HasOne("AgendamentoMedico.Domain.Entities.Usuario", "UsuarioClienteId")
+                    b.HasOne("AgendamentoMedico.Domain.Entities.Usuario", "UsuarioCliente")
                         .WithOne("ClienteId")
-                        .HasForeignKey("AgendamentoMedico.Domain.Entities.Cliente", "Id")
+                        .HasForeignKey("AgendamentoMedico.Domain.Entities.Cliente", "UsuarioId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("UsuarioClienteId");
+                    b.Navigation("UsuarioCliente");
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Funcionario", b =>
                 {
-                    b.HasOne("AgendamentoMedico.Domain.Entities.Usuario", "UsuarioFuncionarioId")
+                    b.HasOne("AgendamentoMedico.Domain.Entities.Usuario", "UsuarioFuncionario")
                         .WithOne("FuncionarioId")
-                        .HasForeignKey("AgendamentoMedico.Domain.Entities.Funcionario", "Id")
+                        .HasForeignKey("AgendamentoMedico.Domain.Entities.Funcionario", "UsuarioId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("UsuarioFuncionarioId");
+                    b.Navigation("UsuarioFuncionario");
                 });
 
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Funcionario_Cliente", b =>
@@ -213,6 +244,25 @@ namespace AgendamentoMedico.Infra.Migrations
                     b.Navigation("Funcionario");
                 });
 
+            modelBuilder.Entity("AgendamentoMedico.Domain.Entities.IdentityRole_Usuario", b =>
+                {
+                    b.HasOne("AgendamentoMedico.Domain.Entities.IdentityRole", "CargosIdentityFk")
+                        .WithMany("UsuarioFk")
+                        .HasForeignKey("CargosIdentityId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.HasOne("AgendamentoMedico.Domain.Entities.Usuario", "UsuarioFk")
+                        .WithMany("Cargos")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.Navigation("CargosIdentityFk");
+
+                    b.Navigation("UsuarioFk");
+                });
+
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Cliente", b =>
                 {
                     b.Navigation("Agendamentos");
@@ -228,8 +278,15 @@ namespace AgendamentoMedico.Infra.Migrations
                     b.Navigation("Agendamentos");
                 });
 
+            modelBuilder.Entity("AgendamentoMedico.Domain.Entities.IdentityRole", b =>
+                {
+                    b.Navigation("UsuarioFk");
+                });
+
             modelBuilder.Entity("AgendamentoMedico.Domain.Entities.Usuario", b =>
                 {
+                    b.Navigation("Cargos");
+
                     b.Navigation("ClienteId");
 
                     b.Navigation("FuncionarioId");

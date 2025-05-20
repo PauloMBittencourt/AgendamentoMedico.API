@@ -1,6 +1,6 @@
-﻿using AgendamentoMedico.API.Models;
-using AgendamentoMedico.Domain.Entities;
-using AgendamentoMedico.Infra.Data;
+﻿using AgendamentoMedico.Domain.Models;
+using AgendamentoMedico.Services.Services.Concrete;
+using AgendamentoMedico.Services.Services.Interfaces;
 using AgendamentoMedico.Utils.Encrypt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -13,14 +13,12 @@ namespace AgendamentoMedico.API.Controllers
     public class AuthController : Controller
     {
         private readonly ILogger<AuthController> _logger;
-        private readonly AppDbContext _context;
-        private readonly EncryptUtils _encryptUtils;
+        private readonly IAuthServices _authServices;
 
-        public AuthController(ILogger<AuthController> logger, AppDbContext context)
+        public AuthController(ILogger<AuthController> logger, IAuthServices authServices)
         {
             _logger = logger;
-            _context = context;
-            _encryptUtils = new EncryptUtils();
+            _authServices = authServices;
         }
 
         public IActionResult Index()
@@ -29,56 +27,35 @@ namespace AgendamentoMedico.API.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel login)
         {
-            var senhaDecrypt = EncryptUtils.DecryptPasswordBase64(login.Senha);
-            senhaDecrypt = EncryptUtils.DecryptPassword(senhaDecrypt);
+            if (!ModelState.IsValid)
+                return View(login);
 
-            if (ModelState.IsValid)
+            var valid = await _authServices.ValidateCredentialsAsync(login);
+
+            if (!valid)
             {
-                try
-                {
-                    var func = await _context.Funcionarios
-                        .Include(f => f.UsuarioFuncionarioId)
-                        .ThenInclude(u => u.FuncionarioId)
-                        .Where(f =>
-                        f.UsuarioFuncionarioId.Senha == senhaDecrypt &&
-                        f.UsuarioFuncionarioId.NomeUsuario == login.NomeUsuario)
-                        .FirstOrDefaultAsync();
-
-                    if (func == null)
-                    {
-                        ModelState.AddModelError(string.Empty, "O usuário não foi encontrado, por favor tente novamente");
-                        return View(func);
-                    }
-
-                    return RedirectToAction("Index", "Home");
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError(string.Empty, "Erro ao realizar o login: " + ex.Message);
-                }
+                ModelState.AddModelError(string.Empty,
+                    "Usuário ou senha inválidos.");
+                return View(login);
             }
-            return View();
+
+            return RedirectToAction("Index", "Home");
         }
 
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync();
             return RedirectToAction("Login");
-        }
-
-        public IActionResult Create()
-        {
-            return View("Create");
-        }
-
-        [HttpPost]
-        public IActionResult Create(CreateViewModel createVw)
-        {
-
-
-            return RedirectToAction("Index", "Relatorios");
         }
     }
 }

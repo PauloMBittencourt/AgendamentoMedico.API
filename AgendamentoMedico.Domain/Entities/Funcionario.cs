@@ -19,7 +19,9 @@ namespace AgendamentoMedico.Domain.Entities
         [Required(ErrorMessage = "O campo Cargo é obrigatório.")]
         public EnumCargo Cargo { get; set; }
 
-        public Usuario UsuarioFuncionarioId { get; set; }
+        [ForeignKey(nameof(UsuarioFuncionario))]
+        public Guid UsuarioId { get; set; }
+        public Usuario UsuarioFuncionario { get; set; }
         public ICollection<HorarioDisponivel> HorariosDisponiveis { get; set; }
 
     }
