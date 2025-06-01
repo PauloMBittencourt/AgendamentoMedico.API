@@ -1,4 +1,5 @@
 ﻿using AgendamentoMedico.Domain.Entities;
+using AgendamentoMedico.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,6 @@ namespace AgendamentoMedico.Infra.Repositories.Interfaces
         Task<HorarioDisponivel?> GetByIdAsync(Guid id);
         Task AddAsync(HorarioDisponivel horario);
         Task UpdateAsync(HorarioDisponivel horario);
+        Task<List<HorarioDisponivelViewModel>> GetDisponiveisDoctorAsync(Funcionario medico);
     }
 }

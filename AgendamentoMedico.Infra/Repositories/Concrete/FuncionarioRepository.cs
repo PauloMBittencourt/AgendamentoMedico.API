@@ -1,4 +1,5 @@
 ﻿using AgendamentoMedico.Domain.Entities;
+using AgendamentoMedico.Domain.Enuns;
 using AgendamentoMedico.Infra.Data;
 using AgendamentoMedico.Infra.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,14 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
             return await _context.Funcionarios
                                  .Include(f => f.UsuarioFuncionario)
                                  .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Funcionario>> GetAllDoctors()
+        {
+            return await _context.Funcionarios
+                     .Include(f => f.UsuarioFuncionario)
+                     .Where(d => d.Cargo == EnumCargo.Medico)
+                     .ToListAsync();
         }
 
         public async Task<Funcionario?> GetByIdAsync(Guid id)

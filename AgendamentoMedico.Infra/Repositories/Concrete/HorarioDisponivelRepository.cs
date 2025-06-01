@@ -1,4 +1,5 @@
 ﻿using AgendamentoMedico.Domain.Entities;
+using AgendamentoMedico.Domain.Models;
 using AgendamentoMedico.Infra.Data;
 using AgendamentoMedico.Infra.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,19 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
                                  .OrderBy(h => h.DataHora)
                                  .AsNoTracking()
                                  .ToListAsync();
+        }
+
+        public async Task<List<HorarioDisponivelViewModel>> GetDisponiveisDoctorAsync(Funcionario medico)
+        {
+            return await _context.HorariosDisponiveis.Where(h => h.FuncionarioId == medico.Id)
+                .AsNoTracking()
+                .Select(h => new HorarioDisponivelViewModel
+                {
+                    Id = h.HorarioDisponivelId,
+                    InicioConsulta = h.DataHora.ToString("s"),
+                    FimConsulta = h.DataHora.AddMinutes(60).ToString("s")
+                })
+                .ToListAsync();
         }
 
         public async Task<HorarioDisponivel?> GetByIdAsync(Guid id)

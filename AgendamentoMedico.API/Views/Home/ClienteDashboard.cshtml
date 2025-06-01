@@ -1,31 +1,251 @@
 ﻿@{
     ViewData["Title"] = "Agendar Consulta";
+    Layout = "_Layout";
 }
 
-<h2>Marcar Consulta</h2>
-<div id="calendar"></div>
+<div class="container my-4">
+    <h2 class="mb-4 text-center">Marcar Consulta</h2>
+
+    <div id="calendar"></div>
+
+    <div class="modal fade"
+         id="confirmModal"
+         tabindex="-1"
+         aria-labelledby="confirmModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-confirm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirmar Agendamento</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalBodyText">
+                        Deseja realmente agendar para
+                        <strong><span id="selectedDateText"></span></strong>?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button"
+                            class="btn btn-primary"
+                            id="confirmButton">
+                        Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="appointment-table">
+        <h3 class="mb-3">Meus Agendamentos</h3>
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Data / Horário</th>
+                    <th>Médico</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentsBody">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade"
+         id="feedbackModal"
+         tabindex="-1"
+         aria-labelledby="feedbackModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="feedbackModalTitle">Título</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body" id="feedbackModalBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
-          rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-          var calendarEl = document.getElementById('calendar');
-          var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'timeGridWeek',
-            events: '/Home/GetHorariosDisponiveis',
-            dateClick: function(info) {
-              if (confirm('Agendar para ' + info.dateStr + '?')) {
-                fetch('/Home/Agendar', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ horarioId: info.dateStrId })
-                }).then(() => window.location.reload());
-              }
+            const feedbackModalEl = document.getElementById('feedbackModal');
+            const feedbackModal = new bootstrap.Modal(feedbackModalEl);
+            const feedbackModalTitle = document.getElementById('feedbackModalTitle');
+            const feedbackModalBody  = document.getElementById('feedbackModalBody');
+
+            function showFeedback(tipo, mensagem) {
+                feedbackModalTitle.innerText = (tipo === 'sucesso') ? 'Sucesso' : 'Erro';
+                feedbackModalBody.innerText  = mensagem;
+                feedbackModal.show();
             }
-          });
-          calendar.render();
+
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                locale: 'pt-br',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridDay,timeGridWeek,dayGridMonth'
+                },
+                buttonText: {
+                    today:    'Hoje',
+                    month:    'Mês',
+                    week:     'Semana',
+                    day:      'Dia'
+                },
+                allDaySlot: false,
+                slotMinTime: '06:00:00',
+                slotMaxTime: '20:00:00',
+                slotDuration: '00:30:00',
+                businessHours: {
+                    daysOfWeek: [1,2,3,4,5],
+                    startTime: '08:00',
+                    endTime:   '18:00'
+                },
+                events: {
+                    url: '/Home/GetHorariosDisponiveis',
+                    method: 'GET',
+                    failure: function() {
+                        showFeedback('erro', 'Falha ao carregar horários disponíveis.');
+                    }
+                },
+                dateClick: function(info) {
+                    var selectedDateStr = info.dateStr;
+                    document.getElementById('selectedDateText').innerText =
+                        new Date(selectedDateStr).toLocaleString('pt-BR', {
+                            dateStyle: 'full',
+                            timeStyle: 'short'
+                        });
+                    document.getElementById('confirmButton').setAttribute('data-selected', selectedDateStr);
+
+                    var confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                    confirmModal.show();
+                }
+            });
+
+            calendar.render();
+
+            document.getElementById('confirmButton').addEventListener('click', function() {
+                var dateToBook = this.getAttribute('data-selected');
+
+                fetch('/Home/Agendar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({ horarioId: dateToBook })
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Erro no servidor ao agendar.');
+                    return response.json();
+                })
+                .then(data => {
+                    var confirmModalEl = document.getElementById('confirmModal');
+                    var confirmModal = bootstrap.Modal.getInstance(confirmModalEl);
+                    confirmModal.hide();
+
+                    calendar.refetchEvents();
+                    loadAppointments();
+
+                    showFeedback(
+                        'sucesso',
+                        'Consulta agendada com sucesso para ' +
+                        new Date(dateToBook).toLocaleString('pt-BR', {
+                            dateStyle: 'full',
+                            timeStyle: 'short'
+                        })
+                    );
+                })
+                .catch(err => {
+                    console.error(err);
+                    showFeedback(
+                        'erro',
+                        'Não foi possível agendar. Por favor, tente novamente mais tarde.'
+                    );
+                });
+            });
+
+            function loadAppointments() {
+                fetch('/Home/GetMeusAgendamentos')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Erro ao buscar agendamentos.');
+                        return response.json();
+                    })
+                    .then(data => {
+                        var tbody = document.getElementById('appointmentsBody');
+                        tbody.innerHTML = '';
+
+                        if (data.length === 0) {
+                            var tr = document.createElement('tr');
+                            var td = document.createElement('td');
+                            td.setAttribute('colspan', '3');
+                            td.classList.add('text-center', 'fst-italic');
+                            td.innerText = 'Você não possui agendamentos.';
+                            tr.appendChild(td);
+                            tbody.appendChild(tr);
+                            return;
+                        }
+
+                        data.forEach(function(item) {
+                            var tr = document.createElement('tr');
+                            var tdDate = document.createElement('td');
+                            var dt = new Date(item.dataHora);
+                            tdDate.innerText = dt.toLocaleString('pt-BR', {
+                                dateStyle: 'short',
+                                timeStyle: 'short'
+                            });
+                            tr.appendChild(tdDate);
+
+                            var tdMedico = document.createElement('td');
+                            tdMedico.innerText = item.nomeMedico || '—';
+                            tr.appendChild(tdMedico);
+
+                            var tdStatus = document.createElement('td');
+                            tdStatus.innerText = item.status || 'Agendado';
+                            tr.appendChild(tdStatus);
+
+                            tbody.appendChild(tr);
+                        });
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        var tbody = document.getElementById('appointmentsBody');
+                        tbody.innerHTML = '';
+                        var tr = document.createElement('tr');
+                        var td = document.createElement('td');
+                        td.setAttribute('colspan', '3');
+                        td.classList.add('text-center', 'text-danger');
+                        td.innerText = 'Erro ao carregar agendamentos.';
+                        tr.appendChild(td);
+                        tbody.appendChild(tr);
+                    });
+            }
+
+            loadAppointments();
         });
     </script>
 }

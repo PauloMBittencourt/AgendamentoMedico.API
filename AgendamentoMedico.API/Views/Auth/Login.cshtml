@@ -3,14 +3,13 @@
 
 @{
     ViewData["Title"] = "Login";
-    Layout = null;
+    Layout = "_LayoutLogin";
 }
 
 <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <link rel="stylesheet" href="~/RelatoriosProtheus.styles.css" asp-append-version="true" />
 <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
-
 <style>
     .logo-text {
         font-family: 'Pacifico', cursive;
@@ -44,7 +43,7 @@
                             <p class="text-muted">Bem-vindo de volta! Por favor, entre com suas credenciais.</p>
                         </div>
 
-                        @Html.ValidationSummary()
+                        <div asp-validation-summary="All" class="text-danger"></div>
                         @using (Html.BeginForm("Login", "Auth", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
                         {
                             <div class="mb-3">
@@ -72,6 +71,7 @@
 
                             <button type="submit" class="btn btn-primary w-100 mb-3">Entrar</button>
                             <br />
+                            <hr />
                             <div class="text-center">
                                 <small>Não tem conta?</small>
                                 <a asp-controller="Clientes"
@@ -79,6 +79,8 @@
                                    class="btn btn-link p-0 ms-1">
                                     Cadastrar
                                 </a>
+                                <br />
+                                @Html.ActionLink("Esqueceu a senha?", "EsqueceuSenha", "Auth", null, new { @class = "mb-4" })
                             </div>
                         }
                     </div>

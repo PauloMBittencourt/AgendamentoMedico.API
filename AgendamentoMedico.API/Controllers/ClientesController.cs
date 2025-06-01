@@ -121,7 +121,6 @@ namespace AgendamentoMedico.API.Controllers
             ClienteViewModel vm = new()
             {
                 Nome = cliente.Nome,
-                Email = cliente.Email,
                 Telefone = cliente.Telefone
             };
 

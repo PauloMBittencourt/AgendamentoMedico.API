@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCoreHero.ToastNotification" Version="1.1.0" />
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
+    <PackageReference Include="FluentEmail.Core" Version="3.0.2" />
+    <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
+    <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -23,6 +28,10 @@
     <ProjectReference Include="..\AgendamentoMedico.Infra\AgendamentoMedico.Infra.csproj" />
     <ProjectReference Include="..\AgendamentoMedico.Services\AgendamentoMedico.Services.csproj" />
     <ProjectReference Include="..\AgendamentoMedico.Utils\AgendamentoMedico.Utils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\Cargos\" />
   </ItemGroup>
 
 </Project>

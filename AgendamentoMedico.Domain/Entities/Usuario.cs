@@ -18,6 +18,7 @@ namespace AgendamentoMedico.Domain.Entities
         [Required(ErrorMessage = "Informe a senha do usuário", AllowEmptyStrings = false)]
         [DataType(DataType.Password)]
         public string Senha { get; set; }
+        public string Email { get; set; }
 
         public Funcionario? FuncionarioId { get; set; }
         public Cliente? ClienteId { get; set; }

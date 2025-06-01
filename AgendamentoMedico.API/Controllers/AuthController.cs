@@ -3,6 +3,7 @@ using AgendamentoMedico.Domain.Models;
 using AgendamentoMedico.Services.Services.Concrete;
 using AgendamentoMedico.Services.Services.Interfaces;
 using AgendamentoMedico.Utils.Encrypt;
+using AspNetCoreHero.ToastNotification.Abstractions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -20,13 +21,15 @@ namespace AgendamentoMedico.API.Controllers
         private readonly IAuthServices _authServices;
         private readonly ICargosService _cargosService;
         private readonly IUsuarioService _usuarioService;
+        private readonly INotyfService _toast;
 
-        public AuthController(ILogger<AuthController> logger, IAuthServices authServices, ICargosService cargosService, IUsuarioService usuarioService)
+        public AuthController(ILogger<AuthController> logger, IAuthServices authServices, ICargosService cargosService, IUsuarioService usuarioService, INotyfService toast)
         {
             _logger = logger;
             _authServices = authServices;
             _cargosService = cargosService;
             _usuarioService = usuarioService;
+            _toast = toast;
         }
 
         public IActionResult Index()
@@ -66,14 +69,16 @@ namespace AgendamentoMedico.API.Controllers
         public async Task<IActionResult> Login(LoginViewModel login)
         {
             if (!ModelState.IsValid)
-                return View(login);
+            {
+                _toast.Error("Por favor verifique se todos os campos foram preenchidos.");
+                return View();
+            }
 
             var valid = await _authServices.ValidateCredentialsAsync(login);
 
             if (!valid)
             {
-                ModelState.AddModelError(string.Empty,
-                    "Usuário ou senha inválidos.");
+                _toast.Error("Usuário ou senha inválidos.");
                 return View(login);
             }
 
@@ -83,6 +88,12 @@ namespace AgendamentoMedico.API.Controllers
             AutenticarIdentity(usuario, login.RememberMe);
 
             return RedirectToAction("Index", "Home");
+        }
+
+        [AllowAnonymous]
+        public ActionResult EsqueceuSenha()
+        {
+            return View();
         }
 
         public async Task<IActionResult> Logout()

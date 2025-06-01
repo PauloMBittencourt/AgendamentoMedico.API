@@ -1,4 +1,5 @@
 ﻿using AgendamentoMedico.Domain.Entities;
+using AgendamentoMedico.Domain.Models;
 using AgendamentoMedico.Infra.Repositories.Interfaces;
 using AgendamentoMedico.Services.Services.Interfaces;
 
@@ -21,6 +22,11 @@ namespace AgendamentoMedico.Services.Services.Concrete
         public async Task<IEnumerable<HorarioDisponivel>> ObterDisponiveisAsync()
         {
             return await _repo.GetDisponiveisAsync();
+        }
+
+        public async Task<IEnumerable<HorarioDisponivelViewModel>> ObterDisponiveisMedicoAsync(Funcionario medico)
+        {
+            return await _repo.GetDisponiveisDoctorAsync(medico);
         }
 
         public async Task CriarAsync(HorarioDisponivel horario)

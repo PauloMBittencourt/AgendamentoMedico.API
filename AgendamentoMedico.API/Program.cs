@@ -7,6 +7,10 @@ using AgendamentoMedico.Services.Services.Concrete;
 using AgendamentoMedico.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
+using System.Net;
+using AspNetCoreHero.ToastNotification;
+using AspNetCoreHero.ToastNotification.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +29,28 @@ builder.Services
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<AppDbContext>(options =>
                         options.UseSqlServer(connectionString));
+
+//FluentEmail
+builder.Services
+    .AddFluentEmail("agendamentomedico43@gmail.com")
+    .AddRazorRenderer()
+    .AddSmtpSender(new SmtpClient
+    {
+        Host = "gmail.com",
+        EnableSsl = true,
+        Port = 587,
+        Credentials = new NetworkCredential("agendamentomedico43@gmail.com", "AgendamentoMedico@123"),
+        UseDefaultCredentials = false
+    });
+
+//Notificação Com Notify
+builder.Services.AddNotyf(config =>
+{
+    config.DurationInSeconds = 5;
+    config.IsDismissable = true;
+    config.Position = NotyfPosition.TopRight;
+});
+
 
 //Injeções de Dependencia
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
@@ -60,6 +86,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.UseNotyf();
 
 app.MapControllerRoute(
     name: "default",

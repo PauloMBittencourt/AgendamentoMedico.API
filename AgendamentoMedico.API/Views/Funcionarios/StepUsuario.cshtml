@@ -18,6 +18,11 @@
                 <input asp-for="NomeUsuario" class="form-control" />
                 <span asp-validation-for="NomeUsuario" class="text-danger"></span>
             </div>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
             <div class="mb-3 position-relative">
                 <label asp-for="Senha" class="form-label"></label>
                 <div class="input-group">
@@ -26,10 +31,6 @@
                         <i class="bi bi-eye"></i>
                     </button>
                 </div>
-                <div class="password-strength"><div id="strengthBar"></div></div>
-                <small id="strengthText" class="form-text text-muted">
-                    Força da senha: Digite uma senha
-                </small>
                 <span asp-validation-for="Senha" class="text-danger"></span>
             </div>
             <button type="submit" class="btn btn-primary">Próximo</button>

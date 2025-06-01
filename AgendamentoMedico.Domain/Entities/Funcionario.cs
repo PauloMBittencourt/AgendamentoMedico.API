@@ -12,8 +12,6 @@ namespace AgendamentoMedico.Domain.Entities
         [Column("Nome")]
         [Required(ErrorMessage = "O campo Nome é obrigatório.")]
         public string Nome { get; set; }
-        [Column("Email")]
-        [Required(ErrorMessage = "O campo Email é obrigatório.")]
         public string Email { get; set; }
         [Column("Cargo")]
         [Required(ErrorMessage = "O campo Cargo é obrigatório.")]

@@ -28,7 +28,6 @@ namespace AgendamentoMedico.Services.Services.Concrete
             {
                 Id = c.Id,
                 Nome = c.Nome,
-                Email = c.Email,
                 Telefone = c.Telefone,
                 UsuarioCliente = c.UsuarioCliente
             });
@@ -42,7 +41,6 @@ namespace AgendamentoMedico.Services.Services.Concrete
             {
                 Id = c.Id,
                 Nome = c.Nome,
-                Email = c.Email,
                 Telefone = c.Telefone,
             };
         }
@@ -54,6 +52,7 @@ namespace AgendamentoMedico.Services.Services.Concrete
             {
                 Id = Guid.NewGuid(),
                 NomeUsuario = usuarioVm.NomeUsuario,
+                Email = usuarioVm.Email,
                 Senha = EncryptUtils.EncryptPassword(senha)
             };
             await _usuarioRepo.AddAsync(usuario);
@@ -62,7 +61,6 @@ namespace AgendamentoMedico.Services.Services.Concrete
             {
                 Id = Guid.NewGuid(),
                 Nome = clienteVm.Nome,
-                Email = clienteVm.Email,
                 Telefone = clienteVm.Telefone,
                 UsuarioCliente = usuario
             };
@@ -74,7 +72,6 @@ namespace AgendamentoMedico.Services.Services.Concrete
             var entity = new Cliente
             {
                 Nome = vm.Nome,
-                Email = vm.Email,
                 Telefone = vm.Telefone
             };
             await _repo.UpdateAsync(entity);

@@ -7,9 +7,6 @@ namespace AgendamentoMedico.Domain.Models
         [Required, Display(Name = "Nome Completo")]
         public string Nome { get; set; }
 
-        [Required, EmailAddress, Display(Name = "E‑mail")]
-        public string Email { get; set; }
-
         [Phone]
         public string Telefone { get; set; }
     }

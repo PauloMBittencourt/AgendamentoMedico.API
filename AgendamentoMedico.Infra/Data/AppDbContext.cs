@@ -35,6 +35,7 @@ namespace AgendamentoMedico.Infra.Data
                 {
                     Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                     NomeUsuario = "admin",
+                    Email = "agendamentomedico43@gmail.com",
                     Senha = senha
                 }
             );
@@ -99,10 +100,6 @@ namespace AgendamentoMedico.Infra.Data
                 c.HasKey(x => x.Id);
 
                 c.Property(x => x.Nome)
-                 .HasMaxLength(200)
-                 .IsRequired();
-
-                c.Property(x => x.Email)
                  .HasMaxLength(200)
                  .IsRequired();
 

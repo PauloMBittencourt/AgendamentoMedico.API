@@ -4,7 +4,72 @@
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<style lang="pt-br">
+    #calendar {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.5rem;
+    }
+
+    .appointment-table {
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .modal-confirm .modal-header {
+        border-bottom: none;
+    }
+
+    .modal-confirm .modal-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    #calendarMedico {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.5rem;
+    }
+
+    .legend-container {
+        max-width: 900px;
+        margin: 1rem auto;
+    }
+
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 1.5rem;
+    }
+
+    .legend-color {
+        width: 16px;
+        height: 16px;
+        margin-right: 0.5rem;
+        border-radius: 3px;
+    }
+
+    .appointment-table-medico {
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .modal-remove {
+        --bs-modal-content-bg: #f8d7da;
+    }
+
+        .modal-remove .modal-title {
+            color: #842029;
+        }
+
+</style>
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,6 +83,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AgendamentoMedico.API.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
 </head>
 <body>
     <header>
@@ -47,14 +113,14 @@
                                 <i class="bi bi-journal-check me-1"></i>Agendamentos
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link"
-                                asp-controller="Auth" asp-action="Index">
-                                <i class="bi bi-people-fill me-1"></i>Administrar Cargos
-                            </a>
-                        </li>
                         @if (claims.Contains("role: Administrador"))
                         {
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                    asp-controller="Auth" asp-action="Index">
+                                    <i class="bi bi-people-fill me-1"></i>Administrar Cargos
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link @((ViewContext.RouteData.Values["Controller"]?.ToString() == "Funcionarios") ? "active" : "")"
                                    asp-controller="Funcionarios" asp-action="Index">
@@ -124,7 +190,8 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.2/js/dataTables.min.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.0.1/js/dataTables.buttons.min.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    @await Component.InvokeAsync("Notyf")
 </body>
-</html>

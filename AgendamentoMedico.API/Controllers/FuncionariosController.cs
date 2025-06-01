@@ -4,6 +4,11 @@ using AgendamentoMedico.Services.Services.Interfaces;
 using AgendamentoMedico.Services.Services.Concrete;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using AspNetCoreHero.ToastNotification.Abstractions;
+using AutoMapper;
+using AgendamentoMedico.Domain.Entities;
 
 namespace AgendamentoMedico.API.Controllers
 {
@@ -12,12 +17,16 @@ namespace AgendamentoMedico.API.Controllers
         private readonly IFuncionarioService _funcionarioService;
         private readonly IUsuarioService _usuarioService;
         private readonly ICargosService _cargosService;
+        private readonly IHorarioDisponivelService _horarioService;
+        private readonly INotyfService _toast;
 
-        public FuncionariosController(IFuncionarioService funcionarioService, IUsuarioService usuarioService, ICargosService cargosService)
+        public FuncionariosController(IFuncionarioService funcionarioService, IUsuarioService usuarioService, ICargosService cargosService, IHorarioDisponivelService horarioService, INotyfService toast)
         {
             _funcionarioService = funcionarioService;
             _usuarioService = usuarioService;
             _cargosService = cargosService;
+            _horarioService = horarioService;
+            _toast = toast;
         }
 
         public async Task<IActionResult> Index()
@@ -117,5 +126,32 @@ namespace AgendamentoMedico.API.Controllers
             return RedirectToAction("Index");
         }
         #endregion
+
+        [HttpGet]
+        public async Task<IActionResult> GetMeusHorariosDisponiveis()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userIdString) || !Guid.TryParse(userIdString, out var userId))
+                return Unauthorized();
+
+            var medico = await _funcionarioService.ObterPorIdAsync(Guid.Parse(userIdString));
+
+            if (medico == null)
+            {
+                _toast.Error("Funcionário não encontrado para o usuário logado.");
+                return NotFound();
+            }
+
+            var config = new MapperConfiguration(cfg => cfg.CreateMap<Funcionario, FuncionarioViewModel>());
+
+            var mapper = config.CreateMapper();
+
+            var medicoMaped = mapper.Map<Funcionario>(medico);
+
+            var lista = await _horarioService.ObterDisponiveisMedicoAsync(medicoMaped);
+
+            return Json(lista);
+        }
+
     }
 }

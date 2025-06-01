@@ -14,5 +14,6 @@ namespace AgendamentoMedico.Infra.Repositories.Interfaces
         Task AddAsync(Funcionario funcionario);
         Task UpdateAsync(Funcionario funcionario);
         Task DeleteAsync(Guid id);
+        Task<IEnumerable<Funcionario>> GetAllDoctors();
     }
 }
