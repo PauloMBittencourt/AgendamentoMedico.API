@@ -22,22 +22,24 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
             return true;
         }
 
-        public IQueryable<string> GetAllRolesDescAsync(bool admIn = false)
+        public async Task<List<string>> GetAllRolesDescAsync(bool admIn = false)
         {
-            IQueryable<string> cargo;
+            List<string> cargo;
 
             if (admIn)
             {
-                cargo = _context.CargosIdentity
+                cargo = await _context.CargosIdentity
                     .Select(p => p.Descricao)
-                    .AsQueryable();
+                    .AsQueryable()
+                    .ToListAsync();
 
                 return cargo;
             }
 
-            cargo = _context.CargosIdentity
+            cargo = await _context.CargosIdentity
                 .Where(p => p.Descricao != "Administrador")
-                .Select(p => p.Descricao);
+                .Select(p => p.Descricao)
+                .ToListAsync();
 
             return cargo;
         }

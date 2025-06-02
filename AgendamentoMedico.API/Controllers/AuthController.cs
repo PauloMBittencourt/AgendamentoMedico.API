@@ -119,7 +119,7 @@ namespace AgendamentoMedico.API.Controllers
                 Roles = cargoUsuario
             };
 
-            ViewBag.Cargos = cargos.Except(cargoUsuario).ToList();
+            ViewBag.Cargos = cargos.Result.Except(cargoUsuario).ToList();
 
             return View(usuarioCargo);
         }
@@ -202,6 +202,7 @@ namespace AgendamentoMedico.API.Controllers
                 {
                     foreach (var claim in usuario.Cargos)
                     {
+                        claims.Add(new Claim(ClaimTypes.NameIdentifier, claim.UsuarioId.ToString()));
                         claims.Add(new Claim(ClaimTypes.Role, claim.CargosIdentityFk.Nome));
                     }
                 }

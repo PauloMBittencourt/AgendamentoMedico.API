@@ -29,6 +29,12 @@ namespace AgendamentoMedico.Services.Services.Concrete
             return await _repo.GetDisponiveisDoctorAsync(medico);
         }
 
+        public async Task<HorarioDisponivel> ObterPorId(Guid id)
+        {
+            var horario = await _repo.GetByIdAsync(id);
+            return horario ?? throw new KeyNotFoundException("Horário não encontrado.");
+        }
+
         public async Task CriarAsync(HorarioDisponivel horario)
         {
             if (horario.DataHora <= DateTime.Now)
@@ -37,6 +43,11 @@ namespace AgendamentoMedico.Services.Services.Concrete
             horario.HorarioDisponivelId = Guid.NewGuid();
             horario.Disponivel = true;
             await _repo.AddAsync(horario);
+        }
+
+        public async Task Remover(Guid id)
+        {
+            await _repo.RemoveAsync(id);
         }
     }
 }

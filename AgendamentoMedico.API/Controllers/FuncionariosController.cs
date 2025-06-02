@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using AgendamentoMedico.Domain.Models;
 using AgendamentoMedico.Services.Services.Interfaces;
-using AgendamentoMedico.Services.Services.Concrete;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using AspNetCoreHero.ToastNotification.Abstractions;
 using AutoMapper;
@@ -32,7 +30,7 @@ namespace AgendamentoMedico.API.Controllers
         public async Task<IActionResult> Index()
         {
             var listaVm = await _funcionarioService.ObterTodosAsync();
-            
+
             return View(listaVm);
         }
 
@@ -46,7 +44,7 @@ namespace AgendamentoMedico.API.Controllers
         public IActionResult Create()
         {
             ViewData["Id"] = new SelectList(_usuarioService.ObterTodosAsync().Result, "Id", "NomeUsuario");
-            return View("StepUsuario");
+            return RedirectToAction("StepUsuario");
         }
 
         public async Task<IActionResult> Edit(Guid id)
@@ -83,7 +81,6 @@ namespace AgendamentoMedico.API.Controllers
         [HttpGet]
         public IActionResult StepUsuario()
         {
-            ViewData["Roles"] = new SelectList(_cargosService.ObterTodosCargosDescAsync(true), "Id", "Nome");
             return View(new UsuarioViewModel());
         }
 
@@ -100,18 +97,39 @@ namespace AgendamentoMedico.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult StepFuncionario()
+        public async Task<IActionResult> StepFuncionario()
         {
             var usuarioJson = TempData.Peek("Usuario") as string;
-            if (usuarioJson == null) return RedirectToAction(nameof(StepUsuario));
-            var usuarioVm = JsonConvert.DeserializeObject<UsuarioViewModel>(usuarioJson);
-            return View(new FuncionarioCreateViewModel());
+            if (usuarioJson == null)
+                return RedirectToAction(nameof(StepUsuario));
+
+            var cargos = await _cargosService.ObterTodosCargosDescAsync();
+            var selectList = cargos
+                .Select(c => new SelectListItem
+                {
+                    Value = c,
+                    Text = c
+                })
+                .ToList();
+
+            var vm = new FuncionarioCreateViewModel
+            {
+                CargosDisponiveis = selectList
+            };
+
+            return View(vm);
         }
 
         [HttpPost]
         public async Task<IActionResult> StepFuncionario(FuncionarioCreateViewModel vm)
         {
-            if (!ModelState.IsValid) return View(vm);
+            if (!ModelState.IsValid)
+            {
+                var cargos = await _cargosService.ObterTodosCargosDescAsync();
+                ViewData["Roles"] = new SelectList(cargos, "Id", "Nome");
+
+                return View(vm);
+            }
 
             var usuarioVm = JsonConvert.DeserializeObject<UsuarioViewModel>(
                 TempData.Peek("Usuario")!.ToString()!);
@@ -139,7 +157,7 @@ namespace AgendamentoMedico.API.Controllers
             if (medico == null)
             {
                 _toast.Error("Funcionário não encontrado para o usuário logado.");
-                return NotFound();
+                return RedirectToAction("Index", "Home");
             }
 
             var config = new MapperConfiguration(cfg => cfg.CreateMap<Funcionario, FuncionarioViewModel>());
@@ -153,5 +171,75 @@ namespace AgendamentoMedico.API.Controllers
             return Json(lista);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SalvarHorarioDisponivel([FromBody] HorarioDisponivelViewModel vm)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userIdString) || !Guid.TryParse(userIdString, out var userId))
+                return Unauthorized();
+
+            var medico = await _funcionarioService.ObterPorIdAsync(Guid.Parse(userIdString));
+
+            if (medico == null)
+            {
+                _toast.Error("Médico não encontrado para o usuário logado.");
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (!DateTime.TryParse(vm.InicioConsulta, out var dataInicio))
+                return BadRequest(new { error = "Formato de data/hora inválido." });
+
+            var novoHorario = new HorarioDisponivel
+            {
+                HorarioDisponivelId = Guid.NewGuid(),
+                FuncionarioId = medico.Id,
+                DataHora = dataInicio,
+                Disponivel = true
+            };
+
+            await _horarioService.CriarAsync(novoHorario);
+
+            return Json(new
+            {
+                id = novoHorario.HorarioDisponivelId,
+                start = novoHorario.DataHora.ToString("s"),
+                end = novoHorario.DataHora.AddMinutes(30).ToString("s")
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoverHorarioDisponivel(Guid id)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userIdString) || !Guid.TryParse(userIdString, out var userId))
+                return Unauthorized();
+
+            var medico = await _funcionarioService.ObterPorIdAsync(Guid.Parse(userIdString));
+
+            if (medico == null)
+                return NotFound(new { error = "Médico não encontrado para o usuário logado." });
+
+            var slot = await _horarioService.ObterPorId(id);
+
+            if (slot == null)
+                return NotFound(new { error = "Horário não encontrado." });
+
+            if (slot.FuncionarioId != medico.Id)
+                return Forbid();
+
+            try
+            {
+                await _horarioService.Remover(id);
+            }
+            catch (Exception)
+            {
+                _toast.Error("Ocorreu um erro ao tentar remover o agendamento");
+                return BadRequest();
+            }
+
+            return Ok(new { sucesso = true });
+        }
     }
 }

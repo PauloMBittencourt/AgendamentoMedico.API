@@ -10,7 +10,7 @@ namespace AgendamentoMedico.Infra.Repositories.Interfaces
     public interface ICargosRepository
     {
         Task<List<IdentityRole>> GetAllRoles();
-        IQueryable<string> GetAllRolesDescAsync(bool admIn = false);
+        Task<List<string>> GetAllRolesDescAsync(bool admIn = false);
         Task<IdentityRole> GetRoleByDesc(string Cargo);
         IQueryable<string> GetRoles_UserByIdAsync(Guid Id);
         List<IdentityRole_Usuario> GetRoles_UsersById(Guid UserId);

@@ -6,7 +6,6 @@
 <div class="container my-4">
     <h2 class="mb-4 text-center">Área do Médico</h2>
 
-    <!-- Legenda para diferenciar “Horários Disponíveis” e “Agendamentos” -->
     <div class="legend-container text-center">
         <span class="legend-item">
             <span class="legend-color" style="background-color: #28a745;"></span> Horário Disponível
@@ -16,10 +15,48 @@
         </span>
     </div>
 
-    <!-- Calendário para exibir horários disponíveis e agendamentos -->
     <div id="calendarMedico"></div>
 
-    <!-- Modal de Confirmação de Remoção de Horário Disponível -->
+    <div class="modal fade"
+         id="createHorarioModal"
+         tabindex="-1"
+         aria-labelledby="createHorarioLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createHorarioLabel">
+                        Confirmar Novo Horário
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Deseja cadastrar o horário de
+                        <strong><span id="createStartText"></span></strong>
+                        até
+                        <strong><span id="createEndText"></span></strong>?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button"
+                            class="btn btn-success"
+                            id="confirmCreateButton">
+                        Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade"
          id="removeHorarioModal"
          tabindex="-1"
@@ -58,7 +95,6 @@
         </div>
     </div>
 
-    <!-- Tabela de Agendamentos do Médico -->
     <div class="appointment-table-medico">
         <h3 class="mb-3">Meus Agendamentos</h3>
         <table class="table table-bordered table-hover">
@@ -70,12 +106,10 @@
                 </tr>
             </thead>
             <tbody id="appointmentsMedicoBody">
-                <!-- Será preenchido via JavaScript -->
             </tbody>
         </table>
     </div>
 
-    <!-- Modal genérico de Feedback -->
     <div class="modal fade"
          id="feedbackModal"
          tabindex="-1"
@@ -91,7 +125,6 @@
                             aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body" id="feedbackModalBody">
-                    <!-- Mensagem de erro ou sucesso irá aqui -->
                 </div>
                 <div class="modal-footer">
                     <button type="button"
@@ -106,21 +139,22 @@
 </div>
 
 @section Scripts {
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-...seu-hash..."
-            crossorigin="anonymous"></script>
-
-    <!-- FullCalendar JS -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Instância do modal de feedback
             const feedbackModalEl = document.getElementById('feedbackModal');
             const feedbackModal = new bootstrap.Modal(feedbackModalEl);
             const feedbackModalTitle = document.getElementById('feedbackModalTitle');
             const feedbackModalBody  = document.getElementById('feedbackModalBody');
+
+            const removeModalEl = document.getElementById('removeHorarioModal');
+            const removeModal = new bootstrap.Modal(removeModalEl);
+
+            const createModalEl = document.getElementById('createHorarioModal');
+            const createModal = new bootstrap.Modal(createModalEl);
+
+            let horarioParaRemoverId = null;
+            let createStart = null;
+            let createEnd = null;
 
             function showFeedback(tipo, mensagem) {
                 feedbackModalTitle.innerText = (tipo === 'sucesso') ? 'Sucesso' : 'Erro';
@@ -128,11 +162,6 @@
                 feedbackModal.show();
             }
 
-            const removeModalEl = document.getElementById('removeHorarioModal');
-            const removeModal = new bootstrap.Modal(removeModalEl);
-            let horarioParaRemoverId = null;
-
-            // Configuração do FullCalendar
             const calendarEl = document.getElementById('calendarMedico');
             const calendarMedico = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
@@ -153,69 +182,30 @@
                 slotMaxTime: '20:00:00',
                 slotDuration: '00:30:00',
                 businessHours: {
-                    daysOfWeek: [1,2,3,4,5], // seg-sex, 08h–18h
+                    daysOfWeek: [1,2,3,4,5],
                     startTime: '08:00',
                     endTime: '18:00'
                 },
                 selectable: true,
                 selectOverlap: false,
+
                 select: function(selectionInfo) {
-                    const start = selectionInfo.startStr;
-                    const end   = selectionInfo.endStr;
+                    createStart = selectionInfo.startStr;
+                    createEnd   = selectionInfo.endStr;
 
-                    if (!confirm(
-                        'Cadastrar novo horário disponível de ' +
-                        new Date(start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) +
-                        ' até ' +
-                        new Date(end).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) +
+                    document.getElementById('createStartText').innerText =
+                        new Date(createStart).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) +
                         ' em ' +
-                        new Date(start).toLocaleDateString('pt-BR', { dateStyle: 'full' }) +
-                        '?'
-                    )) {
-                        calendarMedico.unselect();
-                        return;
-                    }
+                        new Date(createStart).toLocaleDateString('pt-BR', { dateStyle: 'full' });
 
-                    fetch('/Medico/SalvarHorarioDisponivel', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                        },
-                        body: JSON.stringify({ start: start, end: end })
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Erro ao salvar horário no servidor.');
-                        return response.json();
-                    })
-                    .then(novoSlot => {
-                        calendarMedico.addEvent({
-                            id: novoSlot.id,
-                            groupId: 'disponiveis',
-                            start: novoSlot.start,
-                            end: novoSlot.end,
-                            title: 'Disponível',
-                            backgroundColor: '#28a745',
-                            borderColor:    '#28a745',
-                            extendedProps: {
-                                tipo: 'disponivel'
-                            }
-                        });
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        showFeedback(
-                            'erro',
-                            'Não foi possível cadastrar o horário. Verifique sua conexão ou tente novamente.'
-                        );
-                    })
-                    .finally(() => {
-                        calendarMedico.unselect();
-                    });
+                    document.getElementById('createEndText').innerText =
+                        new Date(createEnd).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                    createModal.show();
                 },
+
                 events: function(fetchInfo, successCallback, failureCallback) {
-                    // Carrega horário disponíveis
-                    fetch('/Medico/GetMeusHorariosDisponiveis')
+                    fetch('/Funcionarios/GetMeusHorariosDisponiveis')
                         .then(resp => {
                             if (!resp.ok) throw new Error('Falha ao buscar horários disponíveis.');
                             return resp.json();
@@ -233,8 +223,7 @@
                                     tipo: 'disponivel'
                                 }
                             }));
-                            // Carrega agendamentos
-                            fetch('/Medico/GetMeusAgendamentos')
+                            fetch('/Funcionarios/GetMeusAgendamentos')
                                 .then(resp2 => {
                                     if (!resp2.ok) throw new Error('Falha ao buscar agendamentos.');
                                     return resp2.json();
@@ -266,6 +255,7 @@
                             failureCallback(err);
                         });
                 },
+
                 eventClick: function(info) {
                     const tipo = info.event.extendedProps.tipo;
                     if (tipo === 'disponivel') {
@@ -282,11 +272,55 @@
 
             calendarMedico.render();
 
-            // Remover horário disponível
+            document.getElementById('confirmCreateButton').addEventListener('click', function() {
+                if (!createStart || !createEnd) return;
+
+                fetch('/Funcionarios/SalvarHorarioDisponivel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({ start: createStart, end: createEnd })
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Erro ao salvar horário no servidor.');
+                    return response.json();
+                })
+                .then(novoSlot => {
+                    calendarMedico.addEvent({
+                        id: novoSlot.id,
+                        groupId: 'disponiveis',
+                        start: novoSlot.start,
+                        end: novoSlot.end,
+                        title: 'Disponível',
+                        backgroundColor: '#28a745',
+                        borderColor:    '#28a745',
+                        extendedProps: {
+                            tipo: 'disponivel'
+                        }
+                    });
+                    showFeedback('sucesso', 'Horário cadastrado com sucesso.');
+                })
+                .catch(err => {
+                    console.error(err);
+                    showFeedback(
+                        'erro',
+                        'Não foi possível cadastrar o horário. Verifique sua conexão ou tente novamente.'
+                    );
+                })
+                .finally(() => {
+                    createModal.hide();
+                    calendarMedico.unselect();
+                    createStart = null;
+                    createEnd   = null;
+                });
+            });
+
             document.getElementById('confirmRemoveButton').addEventListener('click', function() {
                 if (!horarioParaRemoverId) return;
 
-                fetch('/Medico/RemoverHorarioDisponivel', {
+                fetch('/Funcionarios/RemoverHorarioDisponivel', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -296,11 +330,9 @@
                 })
                 .then(resp => {
                     if (!resp.ok) throw new Error('Erro ao remover horário no servidor.');
-                    // Remover evento do calendário
                     const ev = calendarMedico.getEventById(horarioParaRemoverId);
                     if (ev) ev.remove();
-                    removeModal.hide();
-                    horarioParaRemoverId = null;
+                    showFeedback('sucesso', 'Horário removido com sucesso.');
                 })
                 .catch(err => {
                     console.error(err);
@@ -308,12 +340,15 @@
                         'erro',
                         'Não foi possível remover o horário. Verifique sua conexão ou tente novamente.'
                     );
+                })
+                .finally(() => {
+                    removeModal.hide();
+                    horarioParaRemoverId = null;
                 });
             });
 
-            // Carrega tabela detalhada de agendamentos do médico
             function loadAppointmentsMedico() {
-                fetch('/Medico/GetMeusAgendamentos')
+                fetch('/Funcionarios/GetMeusAgendamentos')
                     .then(response => {
                         if (!response.ok) throw new Error('Erro ao buscar agendamentos.');
                         return response.json();
@@ -369,7 +404,6 @@
                     });
             }
 
-            // Carrega ao iniciar
             loadAppointmentsMedico();
         });
     </script>

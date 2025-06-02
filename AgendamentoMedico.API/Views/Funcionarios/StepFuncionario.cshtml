@@ -1,5 +1,6 @@
 ﻿@using AgendamentoMedico.Domain.Enuns
 @model FuncionarioCreateViewModel
+
 @{
     ViewData["Title"] = "Cadastro – Etapa 2";
 }
@@ -26,7 +27,7 @@
                 </select>
                 <span asp-validation-for="Cargo" class="text-danger"></span>
             </div>
-            <a asp-action="Step1" class="btn btn-secondary">Voltar</a>
+            <a asp-action="StepUsuario" class="btn btn-secondary">Voltar</a>
             <button type="submit" class="btn btn-success">Concluir</button>
         </form>
     </div>

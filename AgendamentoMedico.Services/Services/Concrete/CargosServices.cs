@@ -13,9 +13,9 @@ namespace AgendamentoMedico.Services.Services.Concrete
             _repo = repo;
         }
 
-        public List<string> ObterTodosCargosDescAsync(bool incluirAdm = false)
+        public async Task<List<string>> ObterTodosCargosDescAsync(bool incluirAdm = false)
         {
-            var cargo = _repo.GetAllRolesDescAsync(incluirAdm).ToList();
+            var cargo = await _repo.GetAllRolesDescAsync(incluirAdm);
             return cargo;
         }
 

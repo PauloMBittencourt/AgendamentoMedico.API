@@ -16,6 +16,7 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
         public async Task<IEnumerable<HorarioDisponivel>> GetByFuncionarioAsync(Guid funcionarioId)
         {
             return await _context.HorariosDisponiveis
+                                 .Include(f => f.Funcionario)
                                  .Where(h => h.FuncionarioId == funcionarioId)
                                  .OrderBy(h => h.DataHora)
                                  .AsNoTracking()
@@ -60,6 +61,16 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
         {
             _context.HorariosDisponiveis.Update(horario);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveAsync(Guid id)
+        {
+            var horario = await GetByIdAsync(id);
+            if (horario != null)
+            {
+                _context.HorariosDisponiveis.Remove(horario);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

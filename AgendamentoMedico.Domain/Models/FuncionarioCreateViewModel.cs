@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace AgendamentoMedico.Domain.Models
 {
@@ -13,5 +14,6 @@ namespace AgendamentoMedico.Domain.Models
         public string Nome { get; set; }
         public string Email { get; set; }
         public Guid Cargo { get; set; }
+        public IEnumerable<SelectListItem> CargosDisponiveis { get; set; }
     }
 }
