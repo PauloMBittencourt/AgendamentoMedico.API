@@ -22,7 +22,7 @@
                 <label asp-for="Cargo" class="form-label">Cargo</label>
                 <select asp-for="Cargo"
                         class="form-select"
-                        asp-items="@(ViewData["Roles"] as SelectList)">F
+                        asp-items="Model.CargosDisponiveis">
                     <option value="">-- Selecione um cargo --</option>
                 </select>
                 <span asp-validation-for="Cargo" class="text-danger"></span>
