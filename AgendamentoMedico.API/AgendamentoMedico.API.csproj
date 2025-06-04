@@ -30,8 +30,4 @@
     <ProjectReference Include="..\AgendamentoMedico.Utils\AgendamentoMedico.Utils.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Views\Cargos\" />
-  </ItemGroup>
-
 </Project>

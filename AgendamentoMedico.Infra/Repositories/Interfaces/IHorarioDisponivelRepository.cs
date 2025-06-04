@@ -15,7 +15,7 @@ namespace AgendamentoMedico.Infra.Repositories.Interfaces
         Task<HorarioDisponivel?> GetByIdAsync(Guid id);
         Task AddAsync(HorarioDisponivel horario);
         Task UpdateAsync(HorarioDisponivel horario);
-        Task<List<HorarioDisponivelViewModel>> GetDisponiveisDoctorAsync(Funcionario medico);
+        List<HorarioDisponivel> GetDisponiveisDoctor(Guid funcionarioId);
         Task RemoveAsync(Guid id);
     }
 }

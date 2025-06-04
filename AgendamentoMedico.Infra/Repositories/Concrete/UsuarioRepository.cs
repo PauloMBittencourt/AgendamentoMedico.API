@@ -14,6 +14,7 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
     public class UsuarioRepository : IUsuarioRepository
     {
         private readonly AppDbContext _context;
+        private static readonly Guid ClienteRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
         public UsuarioRepository(AppDbContext context)
             => _context = context;
@@ -28,6 +29,8 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
         public async Task<Usuario?> GetByIdAsync(Guid id)
             => await _context.Usuarios
                              .AsNoTracking()
+                             .Include(f => f.FuncionarioId)
+                             .Include(f => f.ClienteId)
                              .FirstOrDefaultAsync(u => u.Id == id);
 
         public async Task<Usuario?> GetByUsernameAsync(string nomeUsuario)
@@ -59,6 +62,14 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
         public async Task AddAsync(Usuario usuario)
         {
             _context.Usuarios.Add(usuario);
+
+            var cargoUsuario = new IdentityRole_Usuario
+            {
+                UsuarioId = usuario.Id,
+                CargosIdentityId = ClienteRoleId
+            };
+            _context.CargosIdentity_Usuarios.Add(cargoUsuario);
+
             await _context.SaveChangesAsync();
         }
 

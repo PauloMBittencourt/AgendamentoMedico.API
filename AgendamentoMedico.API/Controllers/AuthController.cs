@@ -109,7 +109,7 @@ namespace AgendamentoMedico.API.Controllers
             var cargoUsuario = _cargosService
                 .ObterCargosUsuarioPorIdAsync(usuario.Id);
 
-            var cargos = _cargosService
+            var cargos = await _cargosService
                 .ObterTodosCargosDescAsync();
 
             var usuarioCargo = new UsuarioRoleViewModel
@@ -119,7 +119,7 @@ namespace AgendamentoMedico.API.Controllers
                 Roles = cargoUsuario
             };
 
-            ViewBag.Cargos = cargos.Result.Except(cargoUsuario).ToList();
+            ViewBag.Cargos = cargos.Except(cargoUsuario).ToList();
 
             return View(usuarioCargo);
         }

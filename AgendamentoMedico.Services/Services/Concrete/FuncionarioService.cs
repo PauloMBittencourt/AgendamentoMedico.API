@@ -49,7 +49,8 @@ namespace AgendamentoMedico.Services.Services.Concrete
             {
                 Id = Guid.NewGuid(),
                 NomeUsuario = usuarioVm.NomeUsuario,
-                Senha = EncryptUtils.EncryptPassword(senha)
+                Senha = EncryptUtils.EncryptPassword(senha),
+                Email = usuarioVm.Email
             };
             await _usuarioRepo.AddAsync(usuario);
 

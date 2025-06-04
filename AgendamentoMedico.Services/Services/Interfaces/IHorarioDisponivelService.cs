@@ -13,7 +13,7 @@ namespace AgendamentoMedico.Services.Services.Interfaces
         Task<IEnumerable<HorarioDisponivel>> ObterTodosPorFuncionarioAsync(Guid funcionarioId);
         Task<IEnumerable<HorarioDisponivel>> ObterDisponiveisAsync();
         Task CriarAsync(HorarioDisponivel horario);
-        Task<IEnumerable<HorarioDisponivelViewModel>> ObterDisponiveisMedicoAsync(Funcionario medico);
+        List<HorarioDisponivel> ObterDisponiveisMedico(Guid medicoId);
         Task<HorarioDisponivel> ObterPorId(Guid id);
         Task Remover(Guid id);
     }

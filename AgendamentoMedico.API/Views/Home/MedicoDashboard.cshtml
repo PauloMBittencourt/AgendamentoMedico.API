@@ -218,10 +218,8 @@
                                 end: slot.end,
                                 title: 'Disponível',
                                 backgroundColor: '#28a745',
-                                borderColor:    '#28a745',
-                                extendedProps: {
-                                    tipo: 'disponivel'
-                                }
+                                borderColor: '#28a745',
+                                extendedProps: { tipo: 'disponivel' }
                             }));
                             fetch('/Funcionarios/GetMeusAgendamentos')
                                 .then(resp2 => {
@@ -230,19 +228,20 @@
                                 })
                                 .then(agendamentos => {
                                     const eventosAgendados = agendamentos.map(a => ({
+
                                         id: a.id,
                                         groupId: 'agendados',
-                                        start: a.dataHora,
-                                        end:   null,
+                                        start: startDate.toISOString(), 
+                                        end: endDate.toISOString(),
                                         title: 'Agendado: ' + a.pacienteNome,
                                         backgroundColor: '#dc3545',
-                                        borderColor:    '#dc3545',
+                                        borderColor: '#dc3545',
                                         extendedProps: {
                                             tipo: 'agendado',
                                             pacienteNome: a.pacienteNome,
                                             status: a.status
-                                        }
-                                    }));
+                                    }
+                                }));
                                     successCallback(eventosDisponiveis.concat(eventosAgendados));
                                 })
                                 .catch(err2 => {
@@ -281,7 +280,10 @@
                         'Content-Type': 'application/json',
                         'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
                     },
-                    body: JSON.stringify({ start: createStart, end: createEnd })
+                    body: JSON.stringify({
+                       InicioConsulta: createStart,
+                       FimConsulta: createEnd
+                   })
                 })
                 .then(response => {
                     if (!response.ok) throw new Error('Erro ao salvar horário no servidor.');
@@ -347,9 +349,9 @@
                 });
             });
 
-            function loadAppointmentsMedico() {
-                fetch('/Funcionarios/GetMeusAgendamentos')
-                    .then(response => {
+        function loadAppointmentsMedico() {
+            fetch('@Url.Action("GetMeusAgendamentos", "Funcionarios")')
+                .then(response => {
                         if (!response.ok) throw new Error('Erro ao buscar agendamentos.');
                         return response.json();
                     })

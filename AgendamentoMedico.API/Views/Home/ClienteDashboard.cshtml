@@ -93,13 +93,15 @@
             const feedbackModalEl = document.getElementById('feedbackModal');
             const feedbackModal = new bootstrap.Modal(feedbackModalEl);
             const feedbackModalTitle = document.getElementById('feedbackModalTitle');
-            const feedbackModalBody  = document.getElementById('feedbackModalBody');
+            const feedbackModalBody = document.getElementById('feedbackModalBody');
 
             function showFeedback(tipo, mensagem) {
                 feedbackModalTitle.innerText = (tipo === 'sucesso') ? 'Sucesso' : 'Erro';
                 feedbackModalBody.innerText  = mensagem;
                 feedbackModal.show();
             }
+
+            let horarioParaAgendarId = null;
 
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -111,10 +113,10 @@
                     right: 'timeGridDay,timeGridWeek,dayGridMonth'
                 },
                 buttonText: {
-                    today:    'Hoje',
-                    month:    'Mês',
-                    week:     'Semana',
-                    day:      'Dia'
+                    today: 'Hoje',
+                    month: 'Mês',
+                    week: 'Semana',
+                    day: 'Dia'
                 },
                 allDaySlot: false,
                 slotMinTime: '06:00:00',
@@ -125,6 +127,7 @@
                     startTime: '08:00',
                     endTime:   '18:00'
                 },
+
                 events: {
                     url: '/Home/GetHorariosDisponiveis',
                     method: 'GET',
@@ -132,14 +135,12 @@
                         showFeedback('erro', 'Falha ao carregar horários disponíveis.');
                     }
                 },
-                dateClick: function(info) {
-                    var selectedDateStr = info.dateStr;
+
+                eventClick: function(info) {
+                    horarioParaAgendarId = info.event.id;
+                    const dt = new Date(info.event.start);
                     document.getElementById('selectedDateText').innerText =
-                        new Date(selectedDateStr).toLocaleString('pt-BR', {
-                            dateStyle: 'full',
-                            timeStyle: 'short'
-                        });
-                    document.getElementById('confirmButton').setAttribute('data-selected', selectedDateStr);
+                        dt.toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' });
 
                     var confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
                     confirmModal.show();
@@ -149,7 +150,7 @@
             calendar.render();
 
             document.getElementById('confirmButton').addEventListener('click', function() {
-                var dateToBook = this.getAttribute('data-selected');
+                if (!horarioParaAgendarId) return;
 
                 fetch('/Home/Agendar', {
                     method: 'POST',
@@ -157,10 +158,10 @@
                         'Content-Type': 'application/json',
                         'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
                     },
-                    body: JSON.stringify({ horarioId: dateToBook })
+                    body: JSON.stringify({ horarioId: horarioParaAgendarId })
                 })
                 .then(response => {
-                    if (!response.ok) throw new Error('Erro no servidor ao agendar.');
+                    if (!response.ok) throw new Error('Erro ao agendar no servidor.');
                     return response.json();
                 })
                 .then(data => {
@@ -169,16 +170,13 @@
                     confirmModal.hide();
 
                     calendar.refetchEvents();
-                    loadAppointments();
+                    loadAppointments();      
 
                     showFeedback(
                         'sucesso',
-                        'Consulta agendada com sucesso para ' +
-                        new Date(dateToBook).toLocaleString('pt-BR', {
-                            dateStyle: 'full',
-                            timeStyle: 'short'
-                        })
+                        'Consulta agendada com sucesso!'
                     );
+                    horarioParaAgendarId = null;
                 })
                 .catch(err => {
                     console.error(err);

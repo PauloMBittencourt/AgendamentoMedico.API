@@ -1,10 +1,13 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using AgendamentoMedico.Domain.Models;
-using AgendamentoMedico.Services.Services.Interfaces;
-using AgendamentoMedico.Domain.Enuns;
 using AgendamentoMedico.Domain.Entities;
+using AgendamentoMedico.Domain.Enuns;
+using AgendamentoMedico.Domain.Models;
+using AgendamentoMedico.Services.Services.Concrete;
+using AgendamentoMedico.Services.Services.Interfaces;
+using AspNetCoreHero.ToastNotification.Abstractions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using System.Security.Claims;
 
 namespace AgendamentoMedico.API.Controllers;
 
@@ -14,13 +17,31 @@ public class HomeController : Controller
     private readonly IUsuarioService _usuarioService;
     private readonly IHorarioDisponivelService _horarioService;
     private readonly IAgendamentoService _agendamentoService;
+    private readonly IClienteService _clienteService;
+    private readonly INotyfService _toast;
 
-    public HomeController(ILogger<HomeController> logger, IUsuarioService usuarioSvc, IHorarioDisponivelService horarioSvc, IAgendamentoService agendamentoSvc)
+    public HomeController(ILogger<HomeController> logger, IUsuarioService usuarioService, IHorarioDisponivelService horarioService, IAgendamentoService agendamentoService, IClienteService clienteService, INotyfService toast)
     {
         _logger = logger;
-        _usuarioService = usuarioSvc;
-        _horarioService = horarioSvc;
-        _agendamentoService = agendamentoSvc;
+        _usuarioService = usuarioService;
+        _horarioService = horarioService;
+        _agendamentoService = agendamentoService;
+        _clienteService = clienteService;
+        _toast = toast;
+    }
+
+    protected async Task<Cliente> ObterClienteLogadoAsync()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdString, out var usuarioId))
+            return null;
+
+        var usuario = await _usuarioService.ObterPorIdAsync(usuarioId);
+        if (usuario == null || usuario.ClienteId == null)
+            return null;
+
+        var cliente = await _clienteService.ObterPorIdAsync(usuario.ClienteId.Id);
+        return cliente;
     }
 
     public async Task<IActionResult> Index()
@@ -76,13 +97,40 @@ public class HomeController : Controller
 
     [Authorize(Roles = "Cliente")]
     [HttpPost]
-    public async Task<IActionResult> Agendar(Guid horarioId)
+    public async Task<IActionResult> Agendar([FromBody] AgendarViewModel agendar)
     {
         var usuario = await _usuarioService.ObterPorNomeAsync(User.Identity.Name!);
         if (usuario == null) return Unauthorized();
 
-        await _agendamentoService.MarkAsync(horarioId, usuario.Id);
-        return Ok();
+        var cliente = await ObterClienteLogadoAsync();
+
+        try
+        {
+            await _agendamentoService.AgendarConsultaAsync(agendar.horarioId, cliente.Id);
+            return RedirectToAction("Index");
+        }
+        catch (Exception)
+        {
+            _toast.Error("Erro ai cadastrar agendamento, favor tentar novamente.");
+            throw;
+        }
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Cliente")]
+    public async Task<JsonResult> GetMeusAgendamentos()
+    {
+        var usuarioLogado = await _usuarioService.ObterPorNomeAsync(User.Identity.Name!);
+        if (usuarioLogado == null)
+            return Json(new object[] { });
+
+        var agendList = _agendamentoService.ObterAgendamentosDoPaciente(usuarioLogado.Id);
+        var json = agendList.Select(a => new {
+            dataHora = a.DataHora,
+            nomeMedico = a.NomeMedico,
+            status = a.Status
+        }).ToList();
+        return Json(json);
     }
 
     public IActionResult Privacy()

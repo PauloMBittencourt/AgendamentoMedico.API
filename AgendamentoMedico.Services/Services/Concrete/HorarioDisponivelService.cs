@@ -24,9 +24,9 @@ namespace AgendamentoMedico.Services.Services.Concrete
             return await _repo.GetDisponiveisAsync();
         }
 
-        public async Task<IEnumerable<HorarioDisponivelViewModel>> ObterDisponiveisMedicoAsync(Funcionario medico)
+        public List<HorarioDisponivel> ObterDisponiveisMedico(Guid medicoId)
         {
-            return await _repo.GetDisponiveisDoctorAsync(medico);
+            return _repo.GetDisponiveisDoctor(medicoId);
         }
 
         public async Task<HorarioDisponivel> ObterPorId(Guid id)

@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AgendamentoMedico.Domain.Entities;
 using AgendamentoMedico.Domain.Models;
 using AgendamentoMedico.Services.Services.Interfaces;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Security.Claims;
 using AspNetCoreHero.ToastNotification.Abstractions;
 using AutoMapper;
-using AgendamentoMedico.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace AgendamentoMedico.API.Controllers
 {
@@ -16,14 +17,16 @@ namespace AgendamentoMedico.API.Controllers
         private readonly IUsuarioService _usuarioService;
         private readonly ICargosService _cargosService;
         private readonly IHorarioDisponivelService _horarioService;
+        private readonly IAgendamentoService _agendamentoService;
         private readonly INotyfService _toast;
 
-        public FuncionariosController(IFuncionarioService funcionarioService, IUsuarioService usuarioService, ICargosService cargosService, IHorarioDisponivelService horarioService, INotyfService toast)
+        public FuncionariosController(IFuncionarioService funcionarioService, IUsuarioService usuarioService, ICargosService cargosService, IHorarioDisponivelService horarioService, IAgendamentoService agendamentoService, INotyfService toast)
         {
             _funcionarioService = funcionarioService;
             _usuarioService = usuarioService;
             _cargosService = cargosService;
             _horarioService = horarioService;
+            _agendamentoService = agendamentoService;
             _toast = toast;
         }
 
@@ -33,6 +36,21 @@ namespace AgendamentoMedico.API.Controllers
 
             return View(listaVm);
         }
+
+        protected async Task<FuncionarioViewModel> ObterFuncionarioLogadoAsync()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdString, out var usuarioId))
+                return null;
+
+            var usuario = await _usuarioService.ObterPorIdAsync(usuarioId);
+            if (usuario == null || usuario.FuncionarioId == null)
+                return null;
+
+            var funcionario = await _funcionarioService.ObterPorIdAsync(usuario.FuncionarioId.Id);
+            return funcionario;
+        }
+
 
         public async Task<IActionResult> Details(Guid id)
         {
@@ -103,8 +121,11 @@ namespace AgendamentoMedico.API.Controllers
             if (usuarioJson == null)
                 return RedirectToAction(nameof(StepUsuario));
 
-            var cargos = await _cargosService.ObterTodosCargosDescAsync();
-            var selectList = cargos
+            var usuarioVm = JsonConvert.DeserializeObject<UsuarioViewModel>(usuarioJson);
+
+            var listaDeCargos = await _cargosService.ObterTodosCargosDescAsync();
+
+            var selectList = listaDeCargos
                 .Select(c => new SelectListItem
                 {
                     Value = c,
@@ -120,13 +141,20 @@ namespace AgendamentoMedico.API.Controllers
             return View(vm);
         }
 
+
         [HttpPost]
         public async Task<IActionResult> StepFuncionario(FuncionarioCreateViewModel vm)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid && vm.CargosDisponiveis != null)
             {
-                var cargos = await _cargosService.ObterTodosCargosDescAsync();
-                ViewData["Roles"] = new SelectList(cargos, "Id", "Nome");
+                var listaDeCargos = await _cargosService.ObterTodosCargosDescAsync();
+                vm.CargosDisponiveis = listaDeCargos
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c,
+                        Text = c
+                    })
+                    .ToList();
 
                 return View(vm);
             }
@@ -145,41 +173,70 @@ namespace AgendamentoMedico.API.Controllers
         }
         #endregion
 
-        [HttpGet]
-        public async Task<IActionResult> GetMeusHorariosDisponiveis()
+        public async Task<IActionResult> GetMeusAgendamentos()
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userIdString) || !Guid.TryParse(userIdString, out var userId))
-                return Unauthorized();
-
-            var medico = await _funcionarioService.ObterPorIdAsync(Guid.Parse(userIdString));
+            var medico = await ObterFuncionarioLogadoAsync();
 
             if (medico == null)
             {
-                _toast.Error("Funcionário não encontrado para o usuário logado.");
+                _toast.Error("Médico não encontrado para o usuário logado.");
                 return RedirectToAction("Index", "Home");
             }
 
-            var config = new MapperConfiguration(cfg => cfg.CreateMap<Funcionario, FuncionarioViewModel>());
+            var disponiveis = _horarioService.ObterDisponiveisMedico(medico.Id);
+            Guid funcionarioId = disponiveis.FirstOrDefault()?.FuncionarioId ?? Guid.Empty;
+            if (funcionarioId == Guid.Empty)
+                return NotFound(new { error = "Funcionário não encontrado." });
 
-            var mapper = config.CreateMapper();
+            var agendamentos = _agendamentoService.ObterAgendamentosDoMedico(medico.Id);
 
-            var medicoMaped = mapper.Map<Funcionario>(medico);
+            var listaJson = agendamentos.ConvertAll(a => new
+            {
+                id = Guid.Parse(a.DataHora + funcionarioId.ToString()),
+                dataHora = a.DataHora,
+                pacienteNome = a.NomePaciente,
+                status = a.Status
+            });
 
-            var lista = await _horarioService.ObterDisponiveisMedicoAsync(medicoMaped);
+            return Json(agendamentos);
+        }
 
-            return Json(lista);
+        [HttpGet]
+        public async Task<IActionResult> GetMeusHorariosDisponiveis()
+        {
+
+            var medico = await ObterFuncionarioLogadoAsync();
+
+            if (medico == null)
+            {
+                _toast.Error("Médico não encontrado para o usuário logado.");
+                return RedirectToAction("Index", "Home");
+            }
+
+            Guid funcionarioId = _horarioService
+                .ObterDisponiveisMedico(medico.Id) 
+                .FirstOrDefault()?.FuncionarioId ?? Guid.Empty;
+
+            if (funcionarioId == Guid.Empty)
+                return NotFound(new { error = "Funcionário não encontrado." });
+
+            var disponiveis = _horarioService.ObterDisponiveisMedico(funcionarioId);
+
+            var listaJson = disponiveis.ConvertAll(h => new
+            {
+                id = h.HorarioDisponivelId,
+                start = h.DataHora.ToString("s"),
+                end = h.DataHora.AddMinutes(30).ToString("s")
+            });
+
+            return Json(listaJson);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SalvarHorarioDisponivel([FromBody] HorarioDisponivelViewModel vm)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userIdString) || !Guid.TryParse(userIdString, out var userId))
-                return Unauthorized();
-
-            var medico = await _funcionarioService.ObterPorIdAsync(Guid.Parse(userIdString));
+            var medico = await ObterFuncionarioLogadoAsync();
 
             if (medico == null)
             {
@@ -212,11 +269,8 @@ namespace AgendamentoMedico.API.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoverHorarioDisponivel(Guid id)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userIdString) || !Guid.TryParse(userIdString, out var userId))
-                return Unauthorized();
 
-            var medico = await _funcionarioService.ObterPorIdAsync(Guid.Parse(userIdString));
+            var medico = await ObterFuncionarioLogadoAsync();
 
             if (medico == null)
                 return NotFound(new { error = "Médico não encontrado para o usuário logado." });

@@ -62,8 +62,8 @@
                     url: "@Url.Action("ChangePerfilUsuario", "Auth")",
                     dataType: "json",
                     data: {
-                        FuncionarioId: funcionarioId,
-                        Perfil: perfil,
+                        usuarioId: funcionarioId,
+                        Cargos: perfil,
                         active: active
                     },
                 }).done(function (data) {

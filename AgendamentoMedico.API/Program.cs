@@ -51,6 +51,8 @@ builder.Services.AddNotyf(config =>
     config.Position = NotyfPosition.TopRight;
 });
 
+//AutoMapper
+builder.Services.AddAutoMapper(typeof(FuncionarioProfile));
 
 //Injeções de Dependencia
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();

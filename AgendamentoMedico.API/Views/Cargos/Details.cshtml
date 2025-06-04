@@ -1,0 +1,32 @@
+﻿@model AgendamentoMedico.Domain.Entities.IdentityRole
+
+@{
+    ViewData["Title"] = "Detalhes do Cargo";
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header text-white" style="background-color: mediumaquamarine">
+            <h2 class="h5 mb-0">Detalhes do Cargo</h2>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-4">
+                <dt class="col-sm-3">Nome</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.Nome)</dd>
+
+                <dt class="col-sm-3">Descrição</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.Descricao)</dd>
+            </dl>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">
+                    <i class="bi bi-pencil-square"></i> Editar
+                </a>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle"></i> Voltar à Lista
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

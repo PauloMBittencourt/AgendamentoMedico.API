@@ -32,18 +32,15 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
                                  .ToListAsync();
         }
 
-        public async Task<List<HorarioDisponivelViewModel>> GetDisponiveisDoctorAsync(Funcionario medico)
+        public List<HorarioDisponivel> GetDisponiveisDoctor(Guid funcionarioId)
         {
-            return await _context.HorariosDisponiveis.Where(h => h.FuncionarioId == medico.Id)
+            return _context.HorariosDisponiveis
+                .Where(h => h.FuncionarioId == funcionarioId && h.Disponivel)
                 .AsNoTracking()
-                .Select(h => new HorarioDisponivelViewModel
-                {
-                    Id = h.HorarioDisponivelId,
-                    InicioConsulta = h.DataHora.ToString("s"),
-                    FimConsulta = h.DataHora.AddMinutes(60).ToString("s")
-                })
-                .ToListAsync();
+                .OrderBy(h => h.DataHora)
+                .ToList();
         }
+
 
         public async Task<HorarioDisponivel?> GetByIdAsync(Guid id)
         {
@@ -72,5 +69,7 @@ namespace AgendamentoMedico.Infra.Repositories.Concrete
                 await _context.SaveChangesAsync();
             }
         }
+
+
     }
 }
