@@ -1,165 +1,196 @@
 # Sistema de Agendamento Médico
 
-Este repositório contém a implementação de um sistema de agendamento médico, desenvolvido em ASP.NET Core com Entity Framework Core (migrations) e Razor Views para o frontend. O sistema permite que médicos cadastrem seus horários disponíveis e que pacientes visualizem e agendem consultas de forma segura.
+Este repositório contém a implementação de um sistema de agendamento médico, desenvolvido em ASP.NET Core (MVC) com Entity Framework Core (migrations) e Razor Views. O sistema permite que médicos cadastrem seus horários disponíveis e que pacientes visualizem e agendem consultas de forma segura.
 
 ---
 
 ## Tecnologias Utilizadas
 
-- **Backend**  
-- .NET 6 (ou superior) SDK  
-- ASP.NET Core MVC  
-- Entity Framework Core (Code-First + Migrations)  
-- C#  
+* **Backend**
 
-- **Banco de Dados**  
-- SQL Server (padrão, mas pode-se adaptar para PostgreSQL)  
+  * .NET 6 (ou superior) SDK
+  * ASP.NET Core MVC
+  * Entity Framework Core (Code-First + Migrations)
+  * C#
 
-- **Frontend**  
-- Razor Views (ASP.NET Core)  
-- Bootstrap 5 (via CDN)  
-- FullCalendar 6 (via CDN)  
-- JavaScript (Fetch API)  
+* **Banco de Dados**
 
-- **Autenticação e Autorização**  
-- ASP.NET Core Identity  
-- Roles: `Administrador`, `Médico`, `Cliente`  
+  * SQL Server (padrão; pode ser adaptado para PostgreSQL)
+  * Migrations do EF Core
 
-- **Dependências Adicionais**  
-- Microsoft.EntityFrameworkCore.SqlServer  
-- Microsoft.EntityFrameworkCore.Tools  
-- AspNetCoreHero.ToastNotification (para notificações de sucesso/erro)  
-- (Opcional) Swagger/Swashbuckle para documentação de API  
+* **Frontend**
 
+  * Razor Views (ASP.NET Core)
+  * Bootstrap 5 (via CDN)
+  * FullCalendar 6 (via CDN)
+  * JavaScript (Fetch API)
+
+* **Autenticação e Autorização**
+
+  * ASP.NET Core Identity
+  * Roles: `Administrador`, `Médico`, `Cliente`
+
+* **Dependências Adicionais**
+
+  * Microsoft.EntityFrameworkCore.SqlServer
+  * Microsoft.EntityFrameworkCore.Tools
+  * AspNetCoreHero.ToastNotification (notificações de sucesso/erro)
 ---
 
 ## Pré-requisitos
 
-1. **.NET 6 (ou superior) SDK**  
- Baixar em: https://dotnet.microsoft.com/download
+1. **.NET 6 (ou superior) SDK**
+   Baixar em: [https://dotnet.microsoft.com/download](https://dotnet.microsoft.com/download)
 
-2. **SQL Server**  
- - Pode usar SQL Server Express ou Developer Edition  
- - Se preferir PostgreSQL, ajuste o provider e a string de conexão no `appsettings.json`.
+2. **SQL Server**
 
-3. **IDE/Editor**  
- - Visual Studio 2022 (ou superior) ou VS Code  
+   * Pode usar SQL Server Express ou Developer Edition
+   * Se preferir PostgreSQL, ajuste o provider e a string de conexão em `appsettings.json`
 
-4. **Navegador**  
- - Chrome, Firefox, Edge etc. (para testar as Views com FullCalendar e Bootstrap)
+3. **IDE/Editor**
+
+   * Visual Studio 2022 (ou superior) ou VS Code
+
+4. **Navegador**
+
+   * Chrome, Firefox, Edge etc. (para testar as Views com FullCalendar e Bootstrap)
 
 ---
 
 ## Configuração do Banco de Dados
 
-1. **String de Conexão**  
- No arquivo `appsettings.json`, configure a seção `ConnectionStrings:DefaultConnection`. Por exemplo, para SQL Server LocalDB:
- ```json
- "ConnectionStrings": {
-   "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=AgendamentoMedicoDb;Trusted_Connection=True;MultipleActiveResultSets=true"
- }
- OBS: Isso é apenas para Localhost e testes de Dev, pois não será uma falha de segurança quando subir o projeto para produção usando uma ferramenta de CI/CD como Azure podendo configurar as Appsettings por pipelines 
+1. **String de Conexão**
+   No arquivo `appsettings.json`, configure:
+
+   ```json
+   "ConnectionStrings": {
+     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=AgendamentoMedicoDb;Trusted_Connection=True;MultipleActiveResultSets=true"
+   }
+   ```
+
+   > **Observação:**
+   > Este exemplo é para desenvolvimento local com LocalDB. Em produção, configure via variáveis de ambiente ou CI/CD.
 
 2. **Migrations e Atualização do Banco**
- Abra o Package Manager Console na pasta do projeto `AgendamentoMedico.Infra` e execute:
+   No Package Manager Console (projeto `AgendamentoMedico.Infra`):
 
- Update-Database
-```
+   ```powershell
+   Update-Database
+   ```
 
-2. **Seed de Roles e Admin**
- No `AppDbContext.OnModelCreating`, já existem seeds para:
+   Isso cria o banco e aplica as migrations, incluindo o seed inicial de roles e do usuário administrador.
 
- * Role `Administrador` (ID = `11111111-1111-1111-1111-111111111111`)
- * Role `Cliente`       (ID = `33333333-3333-3333-3333-333333333333`)
- * Usuário Admin “admin” com senha criptografada
-   Ao executar `Update-Database`, esses registros são inseridos automaticamente.
+3. **Seed de Roles e Admin**
+   No `AppDbContext.OnModelCreating` já há dados seed para:
 
- A senha do Adm tá no código para fazer os testes, favor verificar no AppDbContext.cs, não é uam falha de segurança pois eu somente usei as Seeds para ficar mais prático para vocês testarem, em um caso normal eu criaria usando SQL mesmo para melhor segurança
+   * Role **Administrador** (ID = `11111111-1111-1111-1111-111111111111`)
+   * Role **Cliente**       (ID = `33333333-3333-3333-3333-333333333333`)
+   * Usuário admin (`admin` / `SenhaForte@123`)
+     Esses registros são inseridos automaticamente ao rodar `Update-Database`.
 
 ---
 
 ## Como Executar o Sistema Localmente
 
-1. **Clonar o Repositório**
+1. **Clone o Repositório**
 
- ```bash
- git clone https://github.com/SeuUsuario/AgendamentoMedico.git
- cd AgendamentoMedico/src/AgendamentoMedico.API
- ```
+   ```bash
+   git clone https://github.com/SEU_USUARIO/AgendamentoMedico.git
+   cd AgendamentoMedico/src/AgendamentoMedico.API
+   ```
 
-2. **Configurar `appsettings.json`**
+2. **Ajuste o `appsettings.json`**
 
- * Ajuste a `ConnectionStrings:DefaultConnection` conforme seu ambiente (SQL Server ou PostgreSQL).
+   * Configure `ConnectionStrings:DefaultConnection` conforme seu ambiente.
+   * Certifique-se de ter um usuário e senha válidos para SQL Server (ou outro provider).
 
 3. **Aplicar Migrations**
+   No Package Manager Console:
 
-No Package Manager Console 
- ```bash
- Update-Database
- ```
+   ```powershell
+   Update-Database
+   ```
 
-5. **Executar a Aplicação**
+4. **Executar a Aplicação**
 
- * Por padrão:
+   * Pressione F5 (Visual Studio) ou, na pasta do projeto:
 
-   * front-end em `https://localhost:5001`
-   * back-end em `http://localhost:5000`
+     ```bash
+     dotnet run
+     ```
+   * Por padrão, a aplicação ficará disponível em:
 
-6. **Acessar no Navegador**
+     ```
+     https://localhost:5001
+     http://localhost:5000
+     ```
 
- * Abra `https://localhost:5001`.
- * Faça login com:
-   * **Usuário:** `admin`
-   * **Senha:** `SenhaForte@123`
- * Para cadastrar novos funcionários e médicos, use as rotas de registro ou endpoints dedicados.
- * Para clientes pode cadastrar na própria tela de Login no link "Cadastro"
+5. **Acessar no Navegador**
+
+   * Abra `https://localhost:5001`.
+
+   * Faça login com:
+
+     * **Usuário:** `admin`
+     * **Senha:** `SenhaForte@123`
+
+   * Para cadastrar novos médicos, use a interface de registro de funcionários (via Admin).
+
+   * Pacientes podem se cadastrar diretamente na tela de login (link “Cadastro”).
 
 ---
 
 ## Funcionalidades Principais
 
-### 1. Registro e Login
+### 1. Autenticação e Cadastro
 
 * **Registrar Cliente**
 
-* Rota: `/Account/Register`
-* Cria registros em `Usuarios` e `Clientes`, vinculados via `UsuarioId`.
+  * Rota: `/Account/Register`
+  * Cria registros em `Usuários` e em `Clientes`, vinculados via `UsuarioId`.
 
 * **Login**
 
-* Rota: `/Account/Login`
-* Após autenticar, redireciona conforme role (`Médico` ou `Cliente`).
+  * Rota: `/Account/Login`
+  * Após autenticar, redireciona conforme a role (`Médico` ou `Cliente`).
 
 * **Cadastrar Médico**
 
-* Geralmente feito pelo Admin ou via endpoint específico (não público).
-* Cria registros em `Usuarios` e em `Funcionarios`, vinculados via `UsuarioId`.
+  * Geralmente feito pelo Admin (pode-se criar endpoint interno).
+  * Cria registros em `Usuários` e em `Funcionarios`, vinculados via `UsuarioId`.
 
 ---
 
 ### 2. Área do Médico
 
-* **Dashboard do Médico** (`/Medico/Dashboard`)
+* **Dashboard do Médico** (`/Funcionarios/Dashboard`)
 
-* **Calendário (FullCalendar):**
+  * **Calendário (FullCalendar)**
 
-  * Carrega via AJAX:
+    * Carrega slots via AJAX:
 
-    * `GET /Medico/GetMeusHorariosDisponiveis` → retorna JSON com `{ id, start, end }` para cada slot disponível.
-    * `GET /Medico/GetMeusAgendamentos`   → retorna JSON com `{ id, dataHora, pacienteNome, status }` para agendamentos já feitos.
-  * **Criar Horário Disponível:**
+      * `GET /Funcionarios/GetMeusHorariosDisponiveis` → JSON `{ id, start, end }` para cada horário disponível do médico.
+      * `GET /Funcionarios/GetMeusAgendamentos`   → JSON `{ id, dataHora, pacienteNome, status }` para os agendamentos confirmados.
+    * **Criar Horário Disponível**
 
-    * Clique e arraste para selecionar intervalo (30 minutos).
-    * Abre modal de confirmação; “Confirmar” faz `POST /Medico/SalvarHorarioDisponivel` com `{ start: "...", end: "..." }`.
-  * **Remover Horário Disponível:**
+      * Clique e arraste para selecionar intervalo (30 minutos).
+      * Abre modal de confirmação; ao confirmar, faz `POST /Funcionarios/SalvarHorarioDisponivel` com `{ InicioConsulta, FimConsulta }`.
+      * No back-end, gera `HorarioDisponivelId = Guid.NewGuid()` e salva.
+    * **Remover Horário Disponível**
 
-    * Clique num evento verde; abre modal.
-    * “Remover” faz `POST /Medico/RemoverHorarioDisponivel` com `{ id: "<GUID>" }`.
+      * Clique num evento verde; abre modal.
+      * “Remover” dispara `POST /Funcionarios/RemoverHorarioDisponivel` com `{ Id: "<GUID>" }`.
+  * **Tabela “Meus Agendamentos”**
 
-* **Tabela de Agendamentos:**
+    * Preenchida por `GET /Funcionarios/GetMeusAgendamentos` (JSON → tabela via JS).
+    * Colunas: Data/Hora, Paciente, Status.
 
-  * Atualizada via `GET /Medico/GetMeusAgendamentos` (JSON → HTML via JS).
-  * Colunas: Data/Hora, Paciente, Status.
+* **Modal de Agendamentos Pendentes**
+
+  * Ao carregar o dashboard, faz `GET /Funcionarios/VerificarAgendamentosPendentes`.
+  * Se existirem agendamentos com `Status == Confirmado`, retorna PartialView `_AgendamentosPendentes`.
+  * Modal exibe tabela de `AgendamentoViewModel` com botões “Compareceu” (Finalizado) e “Não Compareceu” (Falta).
+  * Botões disparam `POST /Funcionarios/MarcarPresenca` com `{ HorarioDisponivelId, NovoStatus }`.
 
 ---
 
@@ -167,64 +198,61 @@ No Package Manager Console
 
 * **Marcar Consulta** (`/Home/AgendarConsulta`)
 
-* **Calendário (FullCalendar):**
+  * **Calendário (FullCalendar)**
 
-  * Carrega todos os slots disponíveis (de todos os médicos) via:
+    * Carrega todos os slots disponíveis de todos os médicos via:
 
-    * `GET /Home/GetHorariosDisponiveis` → retorna JSON com `{ id: "<GUID>", start: "...", end: "...", title: "Nome do Médico" }`.
-  * **Agendar Consulta:**
+      * `GET /Home/GetHorariosDisponiveis` → JSON `{ id: "<GUID>", start: "...", end: "...", titulo: "Nome do Médico" }`.
+    * **Agendar Consulta**
 
-    * Clique num evento verde; abre modal de confirmação.
-    * “Confirmar” faz `POST /Home/Agendar` com `{ horarioId: "<GUID>" }`.
+      * Clique num evento verde; abre modal de confirmação.
+      * “Confirmar” faz `POST /Home/Agendar` com `{ horarioId: "<GUID>" }`.
 
-      * Backend usa `_usuarioContextService.ObterClienteLogadoAsync(User)` para obter `Cliente.Id`.
-      * Chama `AgendamentoService.AgendarConsultaAsync(horarioId, clienteId)`.
-    * Após sucesso:
+        * No back-end, obtém `clienteId` via `_usuarioContextService.ObterClienteLogadoAsync(User)`.
+        * Chama `AgendamentoService.AgendarConsultaAsync(horarioId, clienteId)`.
+      * Após sucesso:
 
-      * `calendar.refetchEvents()` remove o slot agendado.
-      * Tabela “Meus Agendamentos” (abaixo) é recarregada via `GET /Home/GetMeusAgendamentos`.
+        * `calendar.refetchEvents()` remove o slot do médico.
+        * Tabela “Meus Agendamentos” (abaixo) é recarregada via `GET /Home/GetMeusAgendamentos`.
+  * **Tabela “Meus Agendamentos”**
 
-* **Tabela Meus Agendamentos:**
-
-* Populada por `GET /Home/GetMeusAgendamentos` → JSON com `{ dataHora, nomeMedico, status }`.
-* Exibe data/hora formatada, nome do médico e status.
----
-### 4. Área de Administrar Cargos
-* **Criar Cargo**
- * Será preciso criar um cargo para Médico para usar as funcionalidades, deixe o nome como "Medico" sem acento mesmo
-
-* **Adicionar Cargos aos Usuários**
- * Quando clicar no botão "Cargos" da tabela você verá todos os cargos(Caso o usuário for Admin ele poderar dar acesso Admin aos outros) e é só mover os cargos que o usuário terá, com isso ele já será associado ao cargo
+    * Populada por `GET /Home/GetMeusAgendamentos` → JSON `{ dataHora, nomeMedico, status }`.
+    * Exibe data/hora formatada, nome do médico e status (Confirmado, Finalizado, Falta).
 
 ---
-## Considerações Finais
 
-* **Segurança**
+### 4. Administração de Cargos
 
-* Senhas criptografadas via Identity.
-* Endpoints protegidos por `[Authorize(Roles = "...")]`.
-* Todas as operações de escrita (`POST`, `PUT`, `DELETE`) exigem `[ValidateAntiForgeryToken]`.
+* **Gerenciar Cargos** (`/Cargos/Index`)
 
-* **Escalabilidade**
+  * Permite criar novos cargos (ex.: “Medico”, “Administrador”, etc.).
+  * Adicionar ou remover cargos de usuários (Administrador pode atribuir role “Medico” a um usuário).
+  
+---
 
-* EF Core com Code-First + Migrations facilita evolução da base.
-* Frontend leve (CDNs para Bootstrap e FullCalendar).
-* Possível migrar para PostgreSQL ou outro provider apenas trocando provider e string de conexão.
+## Considerações de Segurança
 
-* **Possíveis Melhorias**
+* **Senhas** são armazenadas criptografadas (ASP.NET Identity).
+* **Endpoints protegidos** por `[Authorize(Roles = "...")]`.
+* **Operações de escrita** (`POST`, `PUT`, `DELETE`) usam `[ValidateAntiForgeryToken]` para prevenir CSRF.
 
-* Adicionar testes unitários/integrados para controllers, services e repositórios.
-* Implementar notificações em tempo real (SignalR) para avisar médicos sobre novos agendamentos instantaneamente.
-* Refatorar Views em componentes front-end (Vue.js, React ou Blazor).
-* Adicionar paginação e filtros nas tabelas de agendamentos.
-* Implementar cancelamento e reagendamento de consultas.
+---
+
+## Possíveis Melhorias
+
+* Adicionar testes unitários e de integração para controllers, services e repositórios.
+* Implementar notificações em tempo real (SignalR) para alertar médicos sobre novos agendamentos.
+* Refatorar Views para um SPA (Vue.js, React ou Blazor).
+* Adicionar filtros, paginação e busca na tabela de agendamentos.
+* Permitir cancelamento e reagendamento de consultas.
+* Internacionalização (i18n) para suportar múltiplos idiomas.
 
 ---
 
 ## Autor e Contato
 
 * **Nome:** Paulo Henrique Medeiros Bittencourt
-* **E-mail:** [paulohenriquebitt@gmail.com](paulohenriquebitt@gmail.com)
+* **E-mail:** [paulohenriquebitt@gmail.com](mailto:paulohenriquebitt@gmail.com)
 * **Data de Criação:** 20/05/2025
 
 ---
