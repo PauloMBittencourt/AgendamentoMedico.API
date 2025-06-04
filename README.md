@@ -23,7 +23,7 @@ Este repositório contém a implementação de um sistema de agendamento médico
 
 - **Autenticação e Autorização**  
   - ASP.NET Core Identity  
-  - Roles: `Administrador`, `Médico`, `Cliente`  
+  - Roles(Cargos): `Administrador`, `Médico`, `Cliente` e possiveis outros oriundos decriações pelos usuários do Sistema 
 
 - **Dependências Adicionais**  
   - Microsoft.EntityFrameworkCore.SqlServer  
