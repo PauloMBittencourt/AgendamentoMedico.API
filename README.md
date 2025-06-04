@@ -189,7 +189,14 @@ No Package Manager Console
 * Populada por `GET /Home/GetMeusAgendamentos` → JSON com `{ dataHora, nomeMedico, status }`.
 * Exibe data/hora formatada, nome do médico e status.
 ---
+### 4. Área de Administrar Cargos
+* **Criar Cargo**
+ * Será preciso criar um cargo para Médico para usar as funcionalidades, deixe o nome como "Medico" sem acento mesmo
 
+* **Adicionar Cargos aos Usuários**
+ * Quando clicar no botão "Cargos" da tabela você verá todos os cargos(Caso o usuário for Admin ele poderar dar acesso Admin aos outros) e é só mover os cargos que o usuário terá, com isso ele já será associado ao cargo
+
+---
 ## Considerações Finais
 
 * **Segurança**
