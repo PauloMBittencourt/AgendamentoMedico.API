@@ -1,6 +1,3 @@
-Sim, entendi. Abaixo está o **README.md** completo, formatado para uso direto no GitHub.
-
-```markdown
 # Sistema de Agendamento Médico
 
 Este repositório contém a implementação de um sistema de agendamento médico, desenvolvido em ASP.NET Core com Entity Framework Core (migrations) e Razor Views para o frontend. O sistema permite que médicos cadastrem seus horários disponíveis e que pacientes visualizem e agendem consultas de forma segura.
@@ -109,7 +106,7 @@ MedicoDashboard.cshtml
 appsettings.json
 Program.cs
 Startup.cs (se aplicável)
-/Migrations                     ← Pasta gerada pelo EF Core (Code-First)
+/Migrations                    
 README.md
 
 ````
